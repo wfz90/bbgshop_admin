@@ -8,18 +8,13 @@
   <div class="content-main">
     <el-row style="text-align:center">
       <el-col :span="6">
-        <img class="content_img" src="../assets/bendpay.png" alt="" />
-        99
       </el-col>
       <el-col :span="6">
-        <img class="content_img" src="../assets/bendout.png" alt="" />
-        99 </el-col>
+      </el-col>
       <el-col :span="6">
-        <img class="content_img" src="../assets/bendget.png" alt="" />
-      99 </el-col>
+      </el-col>
       <el-col :span="6" >
-        <img class="content_img" src="../assets/refund.png" alt="" />
-        99 </el-col>
+      </el-col>
     </el-row>
   </div>
 </div>

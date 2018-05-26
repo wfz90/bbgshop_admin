@@ -1,4 +1,3 @@
-
 const rootUrl = 'http://127.0.0.1:8360/admin/';
 // http://127.0.0.1:8360/admin/upload/brandPic
 const api = {

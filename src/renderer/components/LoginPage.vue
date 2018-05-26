@@ -78,12 +78,9 @@
           <el-form-item label="" prop="password">
             <el-input type="password" v-model="form.password" @keyup.13.native="show()" placeholder="密码"></el-input>
           </el-form-item>
-
+          <!-- vaptcha_container是用来引入Vaptcha的容器，下面代码为预加载动画，仅供参考
           <el-form-item label="" prop="">
-            <!-- 点击式按钮建议宽度不低于200px,高度介于36px与46px  -->
-            <!-- 嵌入式仅需设置宽度，高度根据宽度自适应，最小宽度为200px -->
             <div id="vaptcha_container" style="width:320px;height:36px;">
-              <!--vaptcha_container是用来引入Vaptcha的容器，下面代码为预加载动画，仅供参考-->
               <div class="vaptcha-init-main">
                 <div class="vaptcha-init-loading">
                   <img src="https://cdn.vaptcha.com/vaptcha-loading.gif" />
@@ -91,7 +88,7 @@
                 </div>
               </div>
             </div>
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item>
             <el-button type="primary" @click="startLogin" :loading="loading" style="width: 100%;">
               {{ loading ? '登录中...' : '登录' }}
@@ -173,44 +170,45 @@ export default {
   },
   components: {},
   mounted() {
-    var that = this
-    // console.log(that.vaptcha);
-    this.axios.get('auth/getVaptcha').then((res) => {
-      // console.log(res);
-      // console.log(that.vaptcha);
-      let resjson = JSON.parse(res.data.data)
-      console.log(resjson);
-      if (resjson) {
-        var options = {
-          vid: resjson.vid, //站点id ,string,必选,
-          challenge: resjson.challenge, //验证流水号 ,string,必选,
-          container: "#vaptcha_container", //验证码容器,element,必选,
-          type: "float", //验证码类型,string,默认float,可选择float,popup,embed,
-          https: false, //是否是https , boolean,默认true,(false:http),
-          color: "#57ABFF", //点击式按钮的背景颜色,string
-          outage: '/',
-          success: function(token, challenge) { //当验证成功时执行回调,function,参数token为string,必选,
-            //提交表单时将token，challenge一并提交，作为验证通过的凭证，服务端进行二次验证  宕机模式无challenge
-            if (token) {
-              that.form.token = token
-            }
-          },
-          fail: function() { //验证失败时执行回调
-            //todo:执行人机验证失败后的事情
-            this.$message.error('人机验证失败！');
-          }
-        }
-        //vaptcha对象
-        var vaptcha_obj;
-        window.vaptcha(options, function(obj) {
-          vaptcha_obj = obj;
-          //执行初始化
-          vaptcha_obj.init();
-          // });
-        }, 'json')
-      }
-
-    })
+    // https://www.vaptcha.com/  行为验证  具体请访问
+    // var that = this
+    // // console.log(that.vaptcha);
+    // this.axios.get('auth/getVaptcha').then((res) => {
+    //   // console.log(res);
+    //   // console.log(that.vaptcha);
+    //   let resjson = JSON.parse(res.data.data)
+    //   console.log(resjson);
+    //   if (resjson) {
+    //     var options = {
+    //       vid: resjson.vid, //站点id ,string,必选,
+    //       challenge: resjson.challenge, //验证流水号 ,string,必选,
+    //       container: "#vaptcha_container", //验证码容器,element,必选,
+    //       type: "float", //验证码类型,string,默认float,可选择float,popup,embed,
+    //       https: false, //是否是https , boolean,默认true,(false:http),
+    //       color: "#57ABFF", //点击式按钮的背景颜色,string
+    //       outage: '/',
+    //       success: function(token, challenge) { //当验证成功时执行回调,function,参数token为string,必选,
+    //         //提交表单时将token，challenge一并提交，作为验证通过的凭证，服务端进行二次验证  宕机模式无challenge
+    //         if (token) {
+    //           that.form.token = token
+    //         }
+    //       },
+    //       fail: function() { //验证失败时执行回调
+    //         //todo:执行人机验证失败后的事情
+    //         this.$message.error('人机验证失败！');
+    //       }
+    //     }
+    //     //vaptcha对象
+    //     var vaptcha_obj;
+    //     window.vaptcha(options, function(obj) {
+    //       vaptcha_obj = obj;
+    //       //执行初始化
+    //       vaptcha_obj.init();
+    //       // });
+    //     }, 'json')
+    //   }
+    //
+    // })
   },
   methods: {
     show() {
@@ -221,18 +219,18 @@ export default {
       // $('.login-btn').click(function(e){
       //       e.preventDefault();
       // console.log(this.vaptcha);
-      if (!this.form.token) {
-        this.$message.error('请进行人机验证！');
-        // alert('请进行人机验证');
-        return false;
-      }
+      // if (!this.form.token) {
+      //   this.$message.error('请进行人机验证！');
+      //   // alert('请进行人机验证');
+      //   return false;
+      // }
 
 
-      this.$refs['form'].validate((valid) => {
-        if (!valid) {
-          return false;
-        }
-
+      // this.$refs['form'].validate((valid) => {
+      //   if (!valid) {
+      //     return false;
+      //   }
+      //
         this.loading = true;
 
         this.axios.post(api.api.LoginPath, {
