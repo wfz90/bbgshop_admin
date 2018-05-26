@@ -224,8 +224,6 @@ export default {
       //   // alert('请进行人机验证');
       //   return false;
       // }
-
-
       // this.$refs['form'].validate((valid) => {
       //   if (!valid) {
       //     return false;
@@ -257,7 +255,7 @@ export default {
 
       }
     }
-  }
+  // }
 }
 </script>
 <style>
