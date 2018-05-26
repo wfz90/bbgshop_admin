@@ -171,13 +171,13 @@ export default new Router({
               {
                 path: 'bargain/bargainPage',
                 name: 'bargain_Page',
-                component:resolve => require(['@/components/bargain/bargainPage'],resolve),
+                component:resolve => require(['@/components/bargain/BargainPage'],resolve),
                 // component: require('@/components/User/ComplaintPage')
               },
               {
                 path: 'bargain/bargainAdd',
                 name: 'bargain_Add',
-                component:resolve => require(['@/components/bargain/bargainAdd'],resolve),
+                component:resolve => require(['@/components/bargain/BargainAdd'],resolve),
                 // component: require('@/components/User/ComplaintPage')
               },
             ]
