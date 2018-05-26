@@ -126,12 +126,12 @@ export default new Router({
                     component:resolve => require(['@/components/Collage/CollagePage'],resolve),
                     // component: require('@/components/Order/OrderPage')
                 },
-                {
-                    path: 'collage/add',
-                    name: 'collage_add',
-                    component:resolve => require(['@/components/Collage/CollageAdd'],resolve),
-                    // component: require('@/components/Order/OrderPage')
-                },
+                // {
+                //     path: 'collage/add',
+                //     name: 'collage_add',
+                //     component:resolve => require(['@/components/Collage/CollageAdd'],resolve),
+                //     // component: require('@/components/Order/OrderPage')
+                // },
                 {
                     path: 'refundorder',
                     name: 'refundorder',
@@ -174,12 +174,12 @@ export default new Router({
                 component:resolve => require(['@/components/bargain/BargainPage'],resolve),
                 // component: require('@/components/User/ComplaintPage')
               },
-              {
-                path: 'bargain/bargainAdd',
-                name: 'bargain_Add',
-                component:resolve => require(['@/components/bargain/BargainAdd'],resolve),
-                // component: require('@/components/User/ComplaintPage')
-              },
+              // {
+              //   path: 'bargain/bargainAdd',
+              //   name: 'bargain_Add',
+              //   component:resolve => require(['@/components/bargain/BargainAdd'],resolve),
+              //   // component: require('@/components/User/ComplaintPage')
+              // },
             ]
         }
 
