@@ -14,6 +14,7 @@
 .cloud{
 	width:100vw;
 	height:50px;
+	top:calc(50vh + 140px);
 	/* border: 1px solid black; */
 	overflow:hidden;
 	position:fixed;
@@ -27,7 +28,7 @@
 } */
 .cloud-b{
 	left: 0;
-	bottom: calc(50vh - 185px);
+	/* bottom: calc(25vh); */
 	/* z-index: -1; */
 	-webkit-animation:cloud 5s infinite;
 	-moz-animation:cloud 5s infinite;
@@ -49,7 +50,8 @@
 .cloud .line-d:before,
 .cloud .line-d:after{
 	height:inherit;
-	width:inherit;
+	width:100vw;
+	left: 0;
 	background:#58d0fe;
 	border-radius:inherit;
 }
@@ -94,17 +96,17 @@
 
 .boat{
 	/* border: 1px solid black; */
+	position:fixed;
 	-moz-transform:scaleX(-1);
   -webkit-transform:scaleX(-1);
   -o-transform:scaleX(-1);
   transform:scaleX(-1);
   /*IE*/
   filter:FlipH;
-	top:65%;
-	left:30%;
+	top:50vh;
+	right: calc(25% + 400px);
 	/* border: 1px solid black; */
-	margin-top:-75px;
-	position:absolute;
+	/* margin-top:-75px; */
 	/* margin-left:-105px; */
 }
 .boat .wrap{
@@ -400,7 +402,7 @@
 }
 
 .boat .water{
-	bottom:0;
+	bottom:35px;
 	left:150px;
 	position:absolute;
 }

@@ -1,30 +1,21 @@
-﻿### 已完成功能
-+ 管理员登录
-+ 商品管理
-+ 商品分类
-+ 品牌管理
-+ 订单管理
+# bbgshop
 
-### Build Setup
+> A Vue.js project
 
-+ 安装bbgshop
-[GitHub](https://github.com/yuanbon)
+## Build Setup
 
-+ 修改api地址
-src/renderer/main.js
-```
-Axios.defaults.baseURL = 'http://127.0.0.1:8360/admin/';  # admin/ 不可删除
-```
-+ 运行
 ``` bash
 # install dependencies
 npm install
 
-# 编译成 web ，编译成功后把 dist/web 下的文件上传的http服务器的根目录下
-npm run build:web
+# serve with hot reload at localhost:8080
+npm run dev
 
+# build for production with minification
+npm run build
+
+# build for production and view the bundle analyzer report
+npm run build --report
 ```
 
-# 测试账号
-admin
- admin888
+For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
