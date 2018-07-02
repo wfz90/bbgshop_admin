@@ -209,7 +209,7 @@ export default {
     startLogin() {
       if (!this.form.token) {
         this.$message.error('请进行人机验证！');
-        // alert('请进行人机验证');
+        // 不用人机验证请注释掉下一行代码;
         return false;
       }
       this.$refs['form'].validate((valid) => {
