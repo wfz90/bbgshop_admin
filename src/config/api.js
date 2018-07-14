@@ -1,7 +1,7 @@
-const rootUrl = 'https://127.0.0.1:8360';
+const rootUrl = 'http://127.0.0.1:8360/admin/';
 // http://127.0.0.1:8360/admin/upload/brandPic
 const api = {
-      LoginPath:'https://127.0.0.1:8360/admin/auth/login',
+      LoginPath:rootUrl+'admin/auth/login',
       IndexBarPic:rootUrl+'upload/brandPic',
       WapBannerPic:rootUrl+'upload/brandPic',
       GoodsMainImg:rootUrl+'upload/brandPic',

@@ -102,9 +102,9 @@
                         </el-switch>
                     </template>
                   </el-table-column>
-                  <el-table-column label="操作" width="78"  align="center">
+                  <el-table-column label="操作" width="140"  align="center">
                       <template slot-scope="scope">
-                          <!-- <el-button size="small" @click="handleRowEdit(scope.$index, scope.row)">查看</el-button> -->
+                          <el-button size="small" @click="handleRowEdit(scope.$index, scope.row)">编辑</el-button>
                           <el-button size="small" type="danger" @click="handleRowDelete(scope.$index, scope.row)">删除</el-button>
                       </template>
                   </el-table-column>
@@ -178,6 +178,14 @@ export default {
      this.getList()
    },
    methods: {
+     handleRowEdit (index,row){
+       this.$router.push({
+         name: 'addcoupon',
+         query: {
+           id: row.id
+         }
+       })
+     },
      handlepointgoods(index,row){
        // console.log(index,row);
        // console.log(row.point_goods);

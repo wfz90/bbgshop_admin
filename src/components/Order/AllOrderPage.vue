@@ -205,9 +205,9 @@
                             <span class="one_row_overflow_refundget">{{ tableData[scope.$index].refund.state == 1001 && tableData[scope.$index].create_refund_localtime !== ' - - ' &&
                               tableData[scope.$index].refund.abled == 0 && tableData[scope.$index].refund_is_success === 0 ? '申请退款' : ''}}</span>
                             <span class="one_row_overflow_refundno">{{tableData[scope.$index].pay_id == 2 &&
-                              tableData[scope.$index].collage_is_success == 0 ? '拼团中' : ''}}</span>
+                              tableData[scope.$index].collage_is_success == 0 && tableData[scope.$index].refund_is_success == 0 ? '拼团中' : ''}}</span>
                             <span class="one_row_overflow_refundcollage">{{tableData[scope.$index].pay_id == 2 &&
-                              tableData[scope.$index].collage_is_success == 1 ? '拼团成功' : ''}}</span>
+                              tableData[scope.$index].collage_is_success == 1 && tableData[scope.$index].refund_is_success == 0 ? '拼团成功' : ''}}</span>
                           </div>
                         </el-tooltip>
                       </template>
@@ -266,7 +266,7 @@
                             <el-button size="small" @click="refundSure(scope.$index, scope.row)" v-if="scope.row.pay_id == 2 && scope.row.collage_is_success == 0
                             && scope.row.collage_isouttime == 1 && scope.row.refund_is_success == 0" type="info">退款(拼团超时)</el-button>
                             <el-button size="small" disabled v-if="scope.row.pay_id == 2 && scope.row.collage_is_success == 0
-                            && scope.row.collage_isouttime == 1 && scope.row.refund_is_success == 1" type="info">拼团超时已退款</el-button>
+                            && scope.row.collage_isouttime == 1 && scope.row.refund_is_success == 1" type="info">拼团超时</el-button>
                             <!-- <el-button size="small" type="danger" @click="handleRowDelete(scope.$index, scope.row)">删除</el-button> -->
                         </template>
                     </el-table-column>

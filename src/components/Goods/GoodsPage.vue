@@ -7,7 +7,7 @@
       <el-breadcrumb-item>商品列表</el-breadcrumb-item>
     </el-breadcrumb>
     <div class="operation-nav">
-      <router-link to="/dashboard/goods/add">
+      <router-link to="/dashboard/GoodsUpdatePage">
         <el-button type="primary" icon="plus">添加商品</el-button>
       </router-link>
     </div>
@@ -24,23 +24,29 @@
       </el-form>
     </div>
     <div class="filter-box" style="float:right;">
-      <!-- <el-form ref="infoForm"  label-width="120px"> -->
-      <!-- <el-form-item label="所属分类" > -->
-      <el-select v-model="FirstCategoryName" placeholder="请选择所属一级分类" @change="firstCategorychange">
-        <el-option v-for="item in FirstCategory" :key="item.id" :label="item.name" :value="item.id"></el-option>
+      <!-- <el-switch
+      v-model="new_is_open"
+      @change="new_is_open_change">
+      </el-switch>
+      <el-switch
+      v-model="hot_is_open"
+      @change="hot_is_open_change">
+      </el-switch>
+      <el-switch
+      v-model="sale_is_open"
+      @change="sale_is_open_change">
+      </el-switch> -->
+      <el-select @change="FirstClassifyChange" v-model="FirstClassifyId" @clear="FirstClassifyClear" clearable placeholder="请选择一级分类">
+        <el-option v-for="item in FirstClassifyList" :key="item.id" :label="item.name" :value="item.id">
+        </el-option>
       </el-select>
-      <el-select v-model="SecondCategoryName" placeholder="请选择所属二级分类" @change="secondCategorychange">
-        <el-option v-for="item in SecondCategory" :key="item.id" :label="item.name" :value="item.id"></el-option>
+      <el-select @change="SecondClassifyChange" v-model="SecondClassifyId" clearable placeholder="请选择二级分类">
+        <el-option v-for="item in SecondClassifyList" :key="item.id" :label="item.name" :value="item.id">
+        </el-option>
       </el-select>
-      <!-- <el-button type="primary"  @click="onClear">清空</el-button> -->
-      <el-button type="info" plain @click="onClear">清空</el-button>
-      <!-- <el-button type="warning" icon="el-icon-star-off" circle></el-button> -->
-
-      <!-- </el-form-item> -->
-      <!-- </el-form> -->
     </div>
     <div class="form-table-box">
-      <el-table :data="tableData" :default-sort="{prop: 'date', order: 'descending'}" style="width: 100%" border stripe>
+      <el-table :data="tableData" :default-sort="{prop: 'retail_price', order: 'descending'}" style="width: 100%" border stripe>
         <!-- <el-table-column prop="id" align="center" sortable label="ID" width="100">
         </el-table-column> -->
         <el-table-column label="商品名称">
@@ -48,9 +54,12 @@
               {{tableData[scope.$index].name}}
           </template>
         </el-table-column>
-        <el-table-column prop="retail_price" align="center" sortable label="售价" width="100">
+        <el-table-column align="center" label="售价" width="100">
+          <template slot-scope="scope">
+              {{tableData[scope.$index].retail_price}}
+          </template>
         </el-table-column>
-        <el-table-column prop="goods_number" label="库存" align="center" sortable width="90">
+        <el-table-column prop="goods_number" label="库存" align="center" width="90">
         </el-table-column>
         <el-table-column prop="is_new" label="新品" align="center" width="80">
           <template slot-scope="scope">
@@ -84,7 +93,7 @@
       </el-table>
     </div>
     <div class="page-box">
-      <el-pagination @current-change="handlePageChange" :current-page="page" :page-size="10" layout="total, prev, pager, next, jumper" :total="total">
+      <el-pagination @current-change="handlePageChange" :current-page="page" :page-size="15" layout="total, prev, pager, next, jumper" :total="total">
       </el-pagination>
     </div>
   </div>
@@ -95,22 +104,87 @@
 export default {
   data() {
     return {
-      FirstCategoryName: '',
-      SecondCategoryName: '',
-      SecondCategoryId: '',
-      FirstCategory: [],
-      SecondCategory: [],
+      FirstClassifyList: [],
+      FirstClassifyId: '',
+      SecondClassifyList: [],
+      SecondClassifyId: '',
+      new_is_open: false,
+      hot_is_open: false,
+      sale_is_open: false,
       issearch: false, //是否处于搜索状态
       row: [],
       page: 1,
       total: 0,
       filterForm: {
-        name: ''
+        name: '',
+        secondClassify: 0,
+        isnew: 0,
+        ishot: 0,
+        issale: 0
       },
       tableData: []
     }
   },
   methods: {
+    ///////////////////////////////////////////以下为分类改变事件
+    //清空一级分类事件
+    FirstClassifyClear() {
+      setTimeout(() => {
+        console.log("触发清空一级分类事件");
+        this.SecondClassifyList = []
+        this.FirstClassifyId = ''
+        this.SecondClassifyId = ''
+      },300)
+      //注：延迟是因为清空一级分类也会导致一级分类改变从而搜索二级分类，所以要在搜索二级分类之后清空二级分类
+    },
+    //一级分类改变触发
+    FirstClassifyChange(e) {
+      // console.log(e);
+      console.log('触发一级分类改变');
+      this.FirstClassifyId = e
+      this.is_classify_change = parseInt(this.is_classify_change) + 1
+      //注: 因为页面刚展示也会触发一级分类改变事件，所以要判断一级分类改变过几次，若没有以下判断会导致刚进入时二级分类为空
+      if (this.is_classify_change > 1) {
+        this.SecondClassifyId = ''
+      }
+      this.axios.post('goodsUpdate/findGoodsClassifySecondById', {
+        id: e
+      }).then(res => {
+        console.log(res);
+        this.SecondClassifyList = res.data.data
+      })
+    },
+    //二级分类改变事件
+    SecondClassifyChange(e) {
+      // console.log(e);
+      console.log('触发二级分类改变');
+      this.SecondClassifyId = e
+      this.getList()
+    },
+    //获取一级分类列表
+    findGoodsClassifyFirst() {
+      this.axios.post('goodsUpdate/findGoodsClassifyFirst', {}).then(res => {
+        console.log(res.data.data);
+        this.FirstClassifyList = res.data.data
+      })
+    },
+    ///////////////////////////////////////////////////以下为筛选事件
+    new_is_open_change() {
+      this.filterForm.isnew = this.new_is_open ? 1 : 0
+      this.getList()
+      // console.log(this.new_is_open_num);
+    },
+    hot_is_open_change() {
+      this.filterForm.ishot = this.hot_is_open ? 1 : 0
+      this.getList()
+      // console.log(this.hot_is_open_num);
+    },
+    sale_is_open_change() {
+      this.filterForm.issale = this.sale_is_open ? 1 : 0
+      this.getList()
+      // console.log(this.sale_is_open_num);
+    },
+    ///////////////////////////////////////////////////以下为乱七八糟事件
     show() {
       this.onSubmitFilter()
     },
@@ -123,46 +197,47 @@ export default {
       // this.FirstCategoryName = ''
       // this.SecondCategoryName = ''
     },
-    firstCategorychange(item) {
-      console.log(item);
-      this.SecondCategoryName = ''
-      this.axios.post('goods/secondCategory', {
-        id: item
-      }).then((res) => {
-        console.log(res);
-        this.SecondCategory = res.data.data
-      })
-    },
-    secondCategorychange(item) {
-      console.log(item);
-      this.issearch = true
-      this.SecondCategoryId = item
-      this.getcatelist(item)
-    },
-    getcatelist(item) {
-      this.axios.get('goods/findsecondgoods', {
-        params: {
-          page: this.page,
-          id: item
-        }
-      }).then((res) => {
-        console.log(res);
-        this.tableData = res.data.data.data
-        for (var i = 0; i < this.tableData.length; i++) {
-          // array[i]
-          let obj = {}
-          obj.is_hot = this.tableData[i].is_hot == 1 ? true : false
-          obj.is_new = this.tableData[i].is_new == 1 ? true : false
-          obj.is_on_sale = this.tableData[i].is_on_sale == 1 ? true : false
-          this.row.push(obj)
-        }
-        // console.log(this.row);
-        // this.row.is_hot = response.data.data.data
-        this.page = res.data.data.currentPage
-        this.total = res.data.data.count
-        // this.SecondCategory = res.data.data
-      })
-    },
+    // firstCategorychange(item) {
+    //   console.log(item);
+    //   this.SecondCategoryName = ''
+    //   this.axios.post('goods/secondCategory', {
+    //     id: item
+    //   }).then((res) => {
+    //     console.log(res);
+    //     this.SecondCategory = res.data.data
+    //   })
+    // },
+    // secondCategorychange(item) {
+    //   console.log(item);
+    //   this.issearch = true
+    //   this.SecondCategoryId = item
+    //   this.getcatelist(item)
+    // },
+    // getcatelist(item) {
+    //   this.axios.get('goods/findsecondgoods', {
+    //     params: {
+    //       page: this.page,
+    //       id: item
+    //     }
+    //   }).then((res) => {
+    //     console.log(res);
+    //     this.tableData = res.data.data.data
+    //     for (var i = 0; i < this.tableData.length; i++) {
+    //       // array[i]
+    //       let obj = {}
+    //       obj.is_hot = this.tableData[i].is_hot == 1 ? true : false
+    //       obj.is_new = this.tableData[i].is_new == 1 ? true : false
+    //       obj.is_on_sale = this.tableData[i].is_on_sale == 1 ? true : false
+    //       this.row.push(obj)
+    //     }
+    //     // console.log(this.row);
+    //     // this.row.is_hot = response.data.data.data
+    //     this.page = res.data.data.currentPage
+    //     this.total = res.data.data.count
+    //     // this.SecondCategory = res.data.data
+    //   })
+    // },
+    /////////////////////////////////////////////////以下为表格选项改变事件
     changeIsnew(index, row) {
       console.log(index, row);
       this.$confirm('是否修改' + row.name + '的新品状态吗' + '?', '修改实时生效！', {
@@ -247,18 +322,24 @@ export default {
     handlePageChange(val) {
       this.page = val;
       //保存到localStorage
-      localStorage.setItem('goodsPage', this.page)
-      localStorage.setItem('goodsFilterForm', JSON.stringify(this.filterForm));
-      // this.getList()
-      if (this.issearch == false) {
-        this.getList()
-      } else {
-        this.getcatelist(this.SecondCategoryId)
-      }
+      localStorage.setItem('Page', this.page)
+      localStorage.setItem('FilterForm', JSON.stringify(this.filterForm));
+      this.getList()
+      // if (this.issearch == false) {
+      //   this.getList()
+      // } else {
+      //   this.getcatelist(this.SecondCategoryId)
+      // }
     },
     handleRowEdit(index, row) {
+      // this.$router.push({
+      //   name: 'goods_add',
+      //   query: {
+      //     id: row.id
+      //   }
+      // })GoodsUpdatePage
       this.$router.push({
-        name: 'goods_add',
+        name: 'GoodsUpdatePage',
         query: {
           id: row.id
         }
@@ -290,19 +371,30 @@ export default {
         });
       });
     },
+    ///////////////////////////////////////////////////////以下为全局方法
     onSubmitFilter() {
       this.page = 1
       this.getList()
     },
     getList() {
-      this.axios.get('goods', {
-        params: {
+      // if (this.SecondClassifyId == '') {
+      //
+      // }
+      this.filterForm.secondClassify = this.SecondClassifyId == '' ? 0 : this.SecondClassifyId
+      console.log(this.filterForm);
+      console.log(this.filterForm.isnew);
+      console.log(this.filterForm.ishot);
+      console.log(this.filterForm.issale);
+      this.axios.post('goods/index', {
           page: this.page,
-          name: this.filterForm.name
-        }
-      }).then((response) => {
-        // console.log(response);
-        this.tableData = response.data.data.data
+          name: this.filterForm.name,
+          SecondClassifyId: this.filterForm.secondClassify,
+          isnew: this.filterForm.isnew,
+          ishot: this.filterForm.ishot,
+          issale: this.filterForm.issale
+      }).then((res) => {
+        console.log(res);
+        this.tableData = res.data.data.data
         this.row = []
         for (var i = 0; i < this.tableData.length; i++) {
           // array[i]
@@ -313,16 +405,9 @@ export default {
           this.row.push(obj)
         }
         // console.log(this.row);
-        // this.row.is_hot = response.data.data.data
-        this.page = response.data.data.currentPage
-        this.total = response.data.data.count
-      })
-      this.getcategory()
-    },
-    getcategory() {
-      this.axios.get('category/topCategory').then((res) => {
-        console.log(res);
-        this.FirstCategory = res.data.data
+        // this.row.is_hot = res.data.data.data
+        this.page = res.data.data.currentPage
+        this.total = res.data.data.count
       })
     },
   },
@@ -330,6 +415,7 @@ export default {
 
   },
   mounted() {
+    this.findGoodsClassifyFirst()
     this.getList();
 
   }

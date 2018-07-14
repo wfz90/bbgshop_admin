@@ -49,14 +49,20 @@
                       {{row[scope.$index].state_text}}
                     </template>
                   </el-table-column>
+                  <el-table-column align="center" label="开奖人数" width="150">
+                    <template slot-scope="scope">
+                      {{tableData[scope.$index].have_join_people_num}} / {{tableData[scope.$index].luck_people_num}}
+                    </template>
+                  </el-table-column>
                   <el-table-column prop="" align="center" width="92" label="启用">
                     <template slot-scope="scope">
                         <el-switch :disabled="row[scope.$index].is_out_time" v-model="row[scope.$index].is_able" @change="changeIsable(scope.$index, scope.row)">
                         </el-switch>
                     </template>
                   </el-table-column>
-                  <el-table-column label="操作" width="78"  align="center">
+                  <el-table-column label="操作" width="140"  align="center">
                       <template slot-scope="scope">
+                        <el-button size="small" :disabled="row[scope.$index].is_out_time" @click="handleRowEdit(scope.$index, scope.row)">编辑</el-button>
                           <el-button size="small" type="danger" @click="handleRowDelete(scope.$index, scope.row)">删除</el-button>
                       </template>
                   </el-table-column>
@@ -88,6 +94,14 @@ export default {
      this.getList()
    },
    methods: {
+     handleRowEdit(index,row) {
+       this.$router.push({
+         name: 'Luckdraw_add',
+         query: {
+           id: row.id
+         }
+       })
+     },
      getList(){
        this.axios.get('luckdraw/list', {
          params: {

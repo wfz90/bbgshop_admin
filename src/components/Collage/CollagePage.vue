@@ -56,11 +56,11 @@
                 {{tableData[scope.$index].collage_success_num}}
               </template>
             </el-table-column>
-            <el-table-column align="center" label="已购买" width="90">
+            <!-- <el-table-column align="center" label="已购买" width="90">
               <template slot-scope="scope">
                 {{tableData[scope.$index].purchased_num}}
               </template>
-            </el-table-column>
+            </el-table-column> -->
             <!-- <el-table-column width="170" align="center" label="结束时间">
               <template scope="scope">
                 {{tableData[scope.$index].end_localtime}}
@@ -79,11 +79,10 @@
                 </el-switch>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="78" align="center">
+            <el-table-column label="操作" width="140" align="center">
               <template slot-scope="scope">
-                <!-- <el-button size="small" @click="handleRowEdit(scope.$index, scope.row)">编辑</el-button> -->
-                <el-button size="small" type="danger"
-                @click="handleRowDelete(scope.$index, scope.row)">删除</el-button>
+                <el-button size="small" @click="handleRowEdit(scope.$index, scope.row)">编辑</el-button>
+                <el-button size="small" type="danger" @click="handleRowDelete(scope.$index, scope.row)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -122,6 +121,14 @@ export default {
      this.getList()
    },
   methods:{
+    handleRowEdit(index,row) {
+      this.$router.push({
+        name: 'collage_add',
+        query: {
+          id: row.id
+        }
+      })
+    },
     handleRowDelete(index,row){
       this.$confirm('此操作将永久删除该信息, 是否继续?', '提示', {
          confirmButtonText: '确定',

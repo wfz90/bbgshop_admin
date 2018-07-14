@@ -11,7 +11,7 @@
             </el-menu-item>
             <el-menu-item index="/dashboard/reportfrom">
                 <i class="fa fa-line-chart"></i>
-                <span>数据</span>
+                <span>数据中心</span>
             </el-menu-item>
             <el-menu-item index="/dashboard/order/all">
                 <i class="fa fa-large fa-archive"></i>
@@ -147,7 +147,7 @@
             <!--</el-submenu>-->
             <el-submenu index="user">
                 <template slot="title">
-                    <i class="fa fa-large fa-user"></i>
+                    <i class="fa fa-large fa-user-circle"></i>
                     <span>用户管理</span>
                 </template>
                 <el-menu-item index="/dashboard/user">

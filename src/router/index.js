@@ -27,6 +27,12 @@ export default new Router({
             component:resolve => require(['@/components/DashboardPage'],resolve),
             children: [
               {
+                  path: 'GoodsUpdatePage',
+                  name: 'GoodsUpdatePage',
+                  component:resolve => require(['@/components/Goods/GoodsUpdatePage'],resolve),
+
+              },
+              {
                   path: 'reportfrom',
                   name: 'reportfrom',
                   component:resolve => require(['@/components/ReportFrom/ReportFrom'],resolve),

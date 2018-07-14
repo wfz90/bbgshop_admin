@@ -132,7 +132,7 @@
 </template>
 
 <script>
-import { Toast } from 'vant'
+import { Toast } from 'Vant'
 export default {
   name:"DistributionDetail",
   data() {

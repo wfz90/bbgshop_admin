@@ -10,9 +10,6 @@
   </div>
   <div class="content-main">
     <el-row class="content_elrow">
-      <!-- <el-col :span="12" class="content_elcol" style="border-right:1px solid #ddd">
-        <div id="dayChart" :style="{width: '100%', height: '100%'}"></div>
-      </el-col> -->
       <el-col :span="24" class="content_elcol">
         <div id="allChart" :style="{width: '100%', height: '100%'}"></div>
       </el-col>
@@ -20,6 +17,11 @@
     <el-row class="content_elrowbottom">
       <el-col :span="24" style="height:98%;margin-top:2%;">
         <div id="weekChart" :style="{width: '100%', height: '100%'}"></div>
+      </el-col>
+    </el-row>
+    <el-row class="content_elrow">
+      <el-col :span="12" class="content_elcol" >
+        <div id="dayChart" :style="{width: '100%', height: '100%'}"></div>
       </el-col>
     </el-row>
   </div>
@@ -528,6 +530,8 @@ export default {
 <style scoped>
 .content_elrowbottom {
   height: 46vh;
+  padding-bottom: 1.45vh;
+  border-bottom: 1px solid #ddd;
 }
 .content_elcol {
   /* border: 1px solid black ; */

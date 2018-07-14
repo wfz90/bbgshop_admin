@@ -28,12 +28,19 @@
           <el-input type="textarea" v-model="GoodsDesc" :rows="3"></el-input>
         </el-form-item>
         <el-form-item label="商品主图">
-          <el-upload action="http://upload.qiniup.com" :data="uploadToken" list-type="picture-card" limit=1 :onError="MainImguploadError" :on-success="MainImgSuccess" :headers="uploaderHeader" :file-list="GoodsMainImg">
+          <el-upload action="http://upload.qiniup.com"
+          :data="uploadToken"
+          list-type="picture-card"
+          :limit='1'
+          :onError="MainImguploadError"
+          :on-success="MainImgSuccess"
+          :headers="uploaderHeader"
+          :file-list="GoodsMainImg">
             <i class="el-icon-plus"></i>
           </el-upload>
-          <!-- <el-dialog :visible.sync="dialogVisibletwo">
+          <el-dialog :visible.sync="dialogVisibletwo">
               <img width="100%" :src="GoodsMainImg" alt="">
-            </el-dialog> -->
+            </el-dialog>
           <div class="form-tip">图片尺寸：750*420 && 请不要上传超过两张！！</div>
         </el-form-item>
         <el-form-item label="商品主页轮播图">
@@ -46,44 +53,16 @@
           :on-remove="loophandleRemove"
           :on-success="loophandlesuccess"
           :file-list="LoopList">
-            <!-- <el-upload
-              action="http://upload.qiniup.com"
-              list-type="picture-card"
-              :data="uploadToken"
-              :headers = "uploaderHeader"
-              :on-preview="handlePictureCardPreview1"
-              :on-remove="LoophandleRemove"
-              :on-success="Loophandlesuccess"
-              :file-list="LoopList"
-              > -->
-            <i class="el-icon-plus"></i>
+          <i class="el-icon-plus"></i>
           </el-upload>
           <el-dialog :visible.sync="dialogVisible">
             <img width="100%" :src="dialogImageUrl" alt="">
           </el-dialog>
-          <!-- <el-upload
-              action="http://127.0.0.1:8360/admin/upload/brandPic"
-              list-type="picture-card"
-              :headers="uploaderHeader"
-              :on-success="LoopImgSuccess"
-              :file-list = "GoodsLoopImg">
-              <i class="el-icon-plus"></i>
-            </el-upload> -->
-          <!-- <el-dialog :visible.sync="dialogVisibletwo">
-              <img width="100%" :src="GoodsLoopImg" alt="">
-            </el-dialog> -->
           <div class="form-tip">图片尺寸：750*420</div>
         </el-form-item>
         <el-form-item label="商品详情">
-          <!-- <quill-editor ref="myTextEditor"
-               :content="GoodsParticEdit"
-               @change="onEditorChange($event)">
-            </quill-editor> -->
-
-
-
           <template>
-                <div>
+                <div style="margin-top:-23px;">
                     <!-- 图片上传组件辅助-->
                     <el-upload
                             class="avatar-uploader"
@@ -108,17 +87,8 @@
                    </el-row>
                 </div>
             </template>
-
-
-
-
-
-
-
-
-
-
         </el-form-item>
+        <el-button type="primary" @click="getsku()">SKU</el-button>
         <el-form-item label="删除原有规格">
           <template>
               <el-radio-group v-model="radio">
@@ -143,7 +113,7 @@
             默认规格为一组规格，规格 —— 常规，库存为999
           </div>
         </el-form-item>
-        <el-form-item v-if="radio == 1" label="商品规格">
+        <el-form-item label="商品规格">
           <el-row :gutter="3">
             <el-col :span="7" v-show="showFirst">
               <el-form-item>
@@ -185,12 +155,12 @@
             </el-col>
           </el-row>
         </el-form-item>
-        <el-form-item v-if="radio == 1">
+        <el-form-item >
           <div class="form-tip">
             提示：务必先确定商品规格名称和规格值再修改规格明细，否则会导致规格明细内容消失！
           </div>
         </el-form-item>
-        <el-form-item v-if="radio == 1" label="规格明细">
+        <el-form-item label="规格明细">
           <el-table :data="tableData" class="tb-edit" style="width: 100%" highlight-current-row>
             <el-table-column :label="first1" prop="first1" v-model="first1prop">
             </el-table-column>
@@ -201,7 +171,7 @@
             <el-table-column label="价格" prop="price">
               <template slot-scope="scope">
                                 <!-- @keyup.native="pricekeyp()"  -->
-                                <el-input size="small"   type="number" @change="SyncPrice()"  v-model="tableData[scope.$index].price"
+                                <el-input size="small" type="number" @change="SyncPrice()"  v-model="tableData[scope.$index].price"
                                   placeholder="请输入价格" >
                                 </el-input>
                               </template>
@@ -215,7 +185,7 @@
             </el-table-column>
           </el-table>
         </el-form-item>
-        <el-form-item v-if="radio == 1" label="批量设置">
+        <el-form-item label="批量设置">
           <el-row>
             <el-col :span="6">
               <el-input type="number" @change="SetAllPrice()" v-model="setallprice" placeholder="批量设置价格">
@@ -326,6 +296,7 @@ export default {
     return {
       // stop:false,                               // 全局变量,坑处
       // timer:null,
+      getshuinfo: {},
       unitespec: false,
       toTop: false,
       toBottom: true,
@@ -374,10 +345,6 @@ export default {
           }
         }
       },
-
-
-
-
 
       chushilength: 0,
       FirstCategoryName: '',
@@ -524,6 +491,47 @@ export default {
     // this.modepricestock()
   },
   methods: {
+    getsku() {
+      console.log(this.GoodsId);
+      this.axios.post('goods/getgoodsskucands',{
+        id: this.GoodsId
+      }).then(res => {
+        console.log(res);
+        if (res.data.errno == 0) {
+          this.getskuinfo = res.data.data
+          this.reloadskuinfo()
+          console.log(this.tableData);
+        }else {
+          this.$message.error("异常 ！ 请退出 ！")
+        }
+      })
+    },
+    reloadskuinfo() {
+      if (this.getskuinfo.value_title_1.length > 0) {
+        this.showFirst = true
+        this.dynamicFirstForm.name = this.getskuinfo.title[0].name
+        this.dynamicFirstForm.list = this.getskuinfo.value_title_1
+        this.tableData = this.getskuinfo.true_product_list
+        // this.show()
+      }
+      if (this.getskuinfo.value_title_2.length > 0) {
+        this.showSecond = true
+        this.dynamicSecondForm.name = this.getskuinfo.title[1].name
+        this.dynamicSecondForm.list = this.getskuinfo.value_title_2
+        this.tableData = this.getskuinfo.true_product_list
+
+        // this.show()
+      }
+      if (this.getskuinfo.value_title_3.length > 0) {
+        this.showThird = true
+        this.dynamicThirdForm.name = this.getskuinfo.title[2].name
+        this.dynamicThirdForm.list = this.getskuinfo.value_title_3
+        this.tableData = this.getskuinfo.true_product_list
+
+        // this.show()
+      }
+      this.show()
+    },
     unitespecchange() {
       if (this.unitespec) {
         // console.log("默认");
@@ -687,25 +695,28 @@ export default {
 
     },
     loophandleRemove(file, fileList) {
+      console.log(file);
       console.log(fileList);
-      this.LoopListRes = []
-      for (var i = 0; i < fileList.length; i++) {
-        // array[i]
-        let list = {}
-        let fileUrl = {}
-        list.fileUrl = fileList[i].url
-        // console.log(fileList[0].response);
-        this.LoopListRes.push(list)
-
-      }
       console.log(this.LoopListRes);
+      // if (this.LoopImgLength == 0){
+        this.LoopListRes = []
+        for (var i = 0; i < fileList.length; i++) {
+          let list = {}
+          let fileUrl = {}
+          if (fileList[i].response) {
+            list.fileUrl = 'http://resource.bbgshop.com/' + fileList[i].response.key
+          }else{
+            list.fileUrl = fileList[i].url
+          }
+          this.LoopListRes.push(list)
+        }
+        console.log(this.LoopListRes);
     },
     loophandlePictureCardPreview1(file) {
       this.dialogImageUrl = file.url;
       this.dialogVisible = true;
     },
     gettoken() {
-      // console.log("12163546498764131");
       this.axios.post('upload/token').then((res) => {
         console.log(res);
         this.uploadToken.token = res.data.data.uploadToken
@@ -945,7 +956,6 @@ export default {
       } else if (this.showSecond == true) {
         this.showThird = true
       } else {
-        // this.$message.error('最大支持三种分类规格！');
       }
       if (this.showFirst == true && this.showSecond == true && this.showThird == true) {
         this.$message.error('最大支持三种分类规格！');
@@ -1353,6 +1363,9 @@ export default {
           console.log(this.GoodsParticEdit);
           this.findSpecifications()
         })
+        if (this.GoodsId !== 0) {
+          this.getsku();
+        }
       }
     },
     findLoopImg() {
@@ -1363,6 +1376,7 @@ export default {
         var resas = res.data.data
         this.LoopImgLength = resas.length
         console.log(this.LoopImgLength);
+        console.log(resas);
         for (var i = 0; i < resas.length; i++) {
           let obj2 = {}
           let obj3 = {}
@@ -1370,9 +1384,7 @@ export default {
           this.LoopList.push(obj2)
           obj3.fileUrl = resas[i].img_url
           this.LoopListRes.push(obj3)
-
         }
-
         this.chushilength = this.LoopList.length
         // this.uploadimgchange(this.LoopList)
         // console.log(this.GoodsLoopImg);

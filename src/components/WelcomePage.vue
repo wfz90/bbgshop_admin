@@ -93,7 +93,7 @@
 
 <script>
 import echarts from 'echarts'
-import { Toast } from 'vant'
+import { Toast } from 'Vant'
 export default {
   data() {
     return {
@@ -379,7 +379,8 @@ export default {
       var colors = ['#61a0a8', '#d53a35'];
       let option = {
         title: {
-            text: '今日订单量与金额'
+            text: '今日订单量与金额',
+            top: '-13px',
         },
         color: colors,
         tooltip: {

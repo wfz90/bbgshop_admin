@@ -73,9 +73,9 @@
                 </el-switch>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="78" align="center">
+            <el-table-column label="操作" width="140" align="center">
               <template slot-scope="scope">
-                <!-- <el-button size="small" @click="handleRowEdit(scope.$index, scope.row)">编辑</el-button> -->
+                <el-button size="small" @click="handleRowEdit(scope.$index, scope.row)">编辑</el-button>
                 <el-button size="small" type="danger" @click="handleRowDelete(scope.$index, scope.row)">删除</el-button>
               </template>
             </el-table-column>
@@ -115,6 +115,14 @@ export default {
      this.getList()
    },
   methods:{
+    handleRowEdit(index,row) {
+      this.$router.push({
+        name: 'bargain_Add',
+        query: {
+          id: row.id
+        }
+      })
+    },
     handleRowDelete(index,row){
       this.$confirm('此操作将永久删除该信息, 是否继续?', '提示', {
          confirmButtonText: '确定',

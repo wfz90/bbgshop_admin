@@ -14,7 +14,7 @@
       <div class="content-main">
         <el-form label-width="180px">
           <el-form-item label="发起砍价商品" >
-            <el-input @focus="showBargainGoodsPopup" v-model="BargainGoods.name" placeholder="点击选择砍价商品" >
+            <el-input :disabled="is_edit" @focus="showBargainGoodsPopup" v-model="BargainGoods.name" placeholder="点击选择砍价商品" >
             </el-input>
           </el-form-item>
           <el-form-item label="商品原价">
@@ -57,36 +57,25 @@
             <!-- <el-input type="number" style="width:125px;" :min="1" v-model="Bargain.BargainPeople"> </el-input> -->
             <!-- <div class="itemtip"> 最低为1，暂无上限 </div> -->
           </el-form-item>
-          <el-form-item label="单用户可砍价次数">
+          <!-- <el-form-item label="单用户可砍价次数">
             <el-input type="number" style="width:125px;" :min="1" v-model="Bargain.BargainPeopleTime"> </el-input>
             <div class="itemtip"> 单个用户可砍价的次数 <span style="color:rgb(255, 150, 0)">谨慎填写</span></div>
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item label="允许发起时间">
             <template>
               <div class="block">
                 <!-- <span class="demonstration">默认</span> -->
                 <el-date-picker
+                  :disabled="is_edit"
                   v-model="Bargain.LimitTimeLocal"
                   type="datetimerange"
-                  placeholder="选择时间范围">
+                  :placeholder="dateplaceholder">
                 </el-date-picker>
               </div>
             </template>
-            <!-- <el-input type="number" placeholder="" style="width:100px;" :min="0" v-model="Bargain.BargainRandomMin">
-               <template slot="append">天</template>
-            </el-input>
-            <el-input type="number" placeholder="" style="width:120px;" :min="0" :max="24" v-model="Bargain.BargainRandomMin">
-               <template slot="append">小时</template>
-            </el-input>
-            <el-input type="number" placeholder="" style="width:120px;" :min="0" :max="60" v-model="Bargain.BargainRandomMin">
-               <template slot="append">分钟</template>
-            </el-input>
-            <el-input type="number" placeholder="" style="width:120px;" :min="0" :max="60" v-model="Bargain.BargainRandomMin">
-               <template slot="append">秒</template>
-            </el-input> -->
           </el-form-item>
           <el-form-item label="用户砍价持续时间">
-             <el-input type="number" placeholder="" style="width:140px;" :min="0" v-model="Bargain.BargainUserDuration">
+             <el-input :disabled="is_edit" type="number" placeholder="" style="width:140px;" :min="0" v-model="Bargain.BargainUserDuration">
                <template slot="append">小时</template>
             </el-input>
           </el-form-item>
@@ -190,14 +179,6 @@ const toolbarOptions = [
   [{'header': 1}, {'header': 2}], // custom button values
   [{'list': 'ordered'}, {'list': 'bullet'}],
   [{'script': 'sub'}, {'script': 'super'}], // superscript/subscript
-  // [{'indent': '-1'}, {'indent': '+1'}],          // outdent/indent
-  // [{'direction': 'rtl'}],                         // text direction
-
-  // [{'size': ['small', false, 'large', 'huge']}],  // custom dropdown
-  // [{'header': [1, 2, 3, 4, 5, 6, false]}],
-
-  // [{'color': []}, {'background': []}],          // dropdown with defaults from theme
-  // [{'font': []}],
   [{'align': 'center'}],
   ['image', 'video'],
   ['clean'] // remove formatting button
@@ -206,6 +187,7 @@ export default {
   name:"BargainAdd",
   data(){
     return {
+      dateplaceholder: '请选择时间范围 ',
       FloatingData: [],
       uploadToken:{
         token: "",
@@ -267,13 +249,38 @@ export default {
       dangerGoodsData: [],
       BargainGoodsList: [],
       allGoodsData: [],
+      id: 0,
+      is_edit: false,//编辑状态
       // row: [],
     }
   },
   mounted(){
+    this.id = this.$route.query.id || 0;
+    if (this.id !== 0) {
+      this.is_edit = true
+      this.getInfo()
+    }
     this.gettoken()
   },
   methods:{
+    /////////////////////////////////////////////编辑时按id获取信息
+    getInfo() {
+      this.axios.post('bargain/findbargaininfoById',{
+        id: this.id
+      }).then(res => {
+        console.log(res);
+        // this.Bargain.
+        this.BargainGoods.name = res.data.data.goods_name
+        this.BargainGoods.retail_price = res.data.data.retail_price
+        this.dateplaceholder = this.timestampToTime(res.data.data.start_time) + '   --   ' + this.timestampToTime(res.data.data.end_time)
+        this.Bargain.BargainMinPrice = res.data.data.lowest_price
+        this.Bargain.BargainPeople = res.data.data.least_cut_num
+        this.Bargain.BargainInitNumber = res.data.data.most_init_num
+        this.Bargain.BargainDetailEdit = res.data.data.activity_detail
+        this.Bargain.BargainUserDuration = res.data.data.user_duration_time / 3600000
+        this.float()
+      })
+    },
     float(){
       // console.log(num);
       console.log(this.Bargain.BargainPeople);
@@ -317,64 +324,99 @@ export default {
 
     },
     onSubmitInfo(){
-
-      console.log(this.BargainGoodsList);
-      console.log(this.Bargain);
-      // if (parseInt(this.Bargain.BargainRandomMin) >= parseInt(this.Bargain.BargainRandomMax)) {
-      //   this.$message.error('砍价随机最大值应大于最小值！')
-      //   return false
-      // }
-      if (this.BargainGoodsList.length == 0) {
-        this.$message.error('请选择砍价商品！')
-        return false
+      if (this.id !== 0) {
+        if (this.Bargain.BargainMinPrice == '') {
+          this.$message.error('请输入商品低价！')
+          return false
+        }
+        if (this.Bargain.BargainInitNumber == '') {
+          this.$message.error('请输入最多发起次数！')
+          return false
+        }
+        if (this.Bargain.BargainPeople == '') {
+          this.$message.error('请输入可参与砍价的人数！')
+          return false
+        }
+        if (this.Bargain.BargainDetailEdit == '') {
+          this.$message.error('请输入活动详情页 ！')
+          return false
+        }
+        this.axios.post('bargain/bargainupdate',{
+          bargain:this.Bargain,
+          id: this.id
+        }).then((res) => {
+          console.log(res);
+          if (res.data.errno === 0) {
+            this.$message({
+              type: 'success',
+              message: '更新成功!'
+            });
+            this.goBackPage()
+          }else {
+            this.$message.error("异常 ！")
+          }
+        })
+      }else {
+        console.log(this.BargainGoodsList);
+        console.log(this.Bargain);
+        // if (parseInt(this.Bargain.BargainRandomMin) >= parseInt(this.Bargain.BargainRandomMax)) {
+        //   this.$message.error('砍价随机最大值应大于最小值！')
+        //   return false
+        // }
+        if (this.BargainGoodsList.length == 0) {
+          this.$message.error('请选择砍价商品！')
+          return false
+        }
+        if (this.Bargain.BargainMinPrice == '') {
+          this.$message.error('请输入商品低价！')
+          return false
+        }
+        if (this.Bargain.BargainInitNumber == '') {
+          this.$message.error('请输入最多发起次数！')
+          return false
+        }
+        if (this.Bargain.BargainPeople == '') {
+          this.$message.error('请输入可参与砍价的人数！')
+          return false
+        }
+        if (this.Bargain.LimitTimeLocal.length == 0) {
+          this.$message.error('请输入允许发起的时间！')
+          return false
+        }else{
+          this.Bargain.LimitTimeUnix[0] = new Date(this.Bargain.LimitTimeLocal[0]).getTime()
+          this.Bargain.LimitTimeUnix[1] = new Date(this.Bargain.LimitTimeLocal[1]).getTime()
+        }
+        if (this.Bargain.BargainUserDuration == '') {
+          this.$message.error('请输入用户可持续砍价的时间！')
+          return false
+        }else{
+          this.Bargain.BargainUserDurationUnix = this.Bargain.BargainUserDuration * 3600000
+        }
+        if (this.Bargain.BargainPeopleTime == '') {
+          this.$message.error('请输入用户可砍价的次数！')
+          return false
+        }
+        // if (this.Bargain.RulesActivity == '') {
+        //   this.$message.error('请输入活动规则！')
+        //   return false
+        // }
+        this.Bargain.create_time = new Date().getTime()
+        this.axios.post('bargain/bargainstore',{
+          bargain:this.Bargain,
+          goods:this.BargainGoods
+        }).then((res) => {
+          console.log(res);
+          if (res.data.errno === 0) {
+            this.$message({
+              type: 'success',
+              message: '添加成功!'
+            });
+            this.goBackPage()
+          }else {
+            this.$message.error("异常 ！")
+          }
+        })
       }
-      if (this.Bargain.BargainMinPrice == '') {
-        this.$message.error('请输入商品低价！')
-        return false
-      }
-      if (this.Bargain.BargainInitNumber == '') {
-        this.$message.error('请输入最多发起次数！')
-        return false
-      }
-      if (this.Bargain.BargainPeople == '') {
-        this.$message.error('请输入可参与砍价的人数！')
-        return false
-      }
-      if (this.Bargain.LimitTimeLocal.length == 0) {
-        this.$message.error('请输入允许发起的时间！')
-        return false
-      }else{
-        this.Bargain.LimitTimeUnix[0] = new Date(this.Bargain.LimitTimeLocal[0]).getTime()
-        this.Bargain.LimitTimeUnix[1] = new Date(this.Bargain.LimitTimeLocal[1]).getTime()
-      }
-      if (this.Bargain.BargainUserDuration == '') {
-        this.$message.error('请输入用户可持续砍价的时间！')
-        return false
-      }else{
-        this.Bargain.BargainUserDurationUnix = this.Bargain.BargainUserDuration * 3600000
-      }
-      if (this.Bargain.BargainPeopleTime == '') {
-        this.$message.error('请输入用户可砍价的次数！')
-        return false
-      }
-      // if (this.Bargain.RulesActivity == '') {
-      //   this.$message.error('请输入活动规则！')
-      //   return false
-      // }
-      this.Bargain.create_time = new Date().getTime()
-      this.axios.post('bargain/bargainstore',{
-        bargain:this.Bargain,
-        goods:this.BargainGoods
-      }).then((res) => {
-        console.log(res);
-        this.$message({
-          type: 'success',
-          message: '添加成功!'
-        });
-        this.goBackPage()
-
-      })
-
     },
     onEditorChange(e) {
       this.Bargain.BargainDetailEdit = e.html
@@ -523,6 +565,16 @@ export default {
           this.BargainGoods = {}
           this.Bargain.BargainDetailEdit = ''
         }
+    },
+    timestampToTime(timestamp) {
+        var date = new Date(timestamp * 1);
+        var Y = date.getFullYear() + '/';
+        var M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '/';
+        var D = (date.getDate() < 10 ? '0'+date.getDate() : date.getDate()) + '  ';
+        var h = (date.getHours() < 10 ? '0'+date.getHours() : date.getHours()) + ':';
+        var m = (date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes()) + ':';
+        var s = (date.getSeconds() < 10 ? '0'+date.getSeconds() : date.getSeconds());
+        return Y+M+D+h+m+s;
     },
     goBackPage() {
       this.$router.go(-1);

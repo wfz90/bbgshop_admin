@@ -16,6 +16,9 @@
           <el-form-item label="发起抽奖商品" >
             <el-input @focus="showLuckGoodsPopup" v-model="LuckGoods.name" placeholder="点击选择发起抽奖商品" >
             </el-input>
+            <div v-if="this.id !== 0" class="itemtip">
+              编辑时重新选择商品则视为重新发起选择商品的抽奖 ！
+            </div>
           </el-form-item>
           <el-form-item label="商品原价">
             <el-input style="width:100px;" disabled v-model="(LuckGoods.retail_price / 1).toFixed(2)">
@@ -24,24 +27,17 @@
               原价不可更改
             </div>
           </el-form-item>
-          <!-- <el-form-item label="抽奖价">
-            <el-input type="number" style="width:125px;" :min="0" :max="LuckGoods.retail_price" v-model="Luck.LuckMinPrice"> </el-input>
-            <div class="itemtip"> 允许商品的抽奖价格，最低为0.01，最高为商品原价 </div>
-          </el-form-item> -->
-          <!-- <el-form-item label="最多发起次数">
-            <el-input type="number" style="width:125px;" :min="1" :max="LuckGoods.goods_number" v-model="Luck.LuckInitNumber"> </el-input>
-            <div class="itemtip">如果用户发起，则数值减一</div>
-          </el-form-item> -->
-
-          <el-form-item label="最多参与抽奖人数">
+          <el-form-item label="最少开奖人数">
             <el-input type="number" style="width:125px;" v-model="Luck.LuckPeople" :min="1" > </el-input>
-            <div class="itemtip"> 最大允许参与抽奖的人数, <span style="color:#ff6666;">超出此数值将提示抽奖人数已满</span> </div>
+            <div class="itemtip"> 最少开奖人数, <span style="color:#ff6666;">若截止开奖人数没有达到最少开奖人数，截止时间和开奖时间则自动延后一天 (24小时) ，直到达到最少人数才开奖 </span> </div>
           </el-form-item>
           <el-form-item label="奖品数量">
              <el-input type="number" placeholder="" style="width:140px;" :min="1" v-model="Luck.LuckGoodsNum">
                <template slot="append">件</template>
             </el-input>
-            <div class="itemtip"> 奖品数量,此数值为 <span style="color:#ff6f00;">抽奖抽出的人数</span> </div>
+            <div class="itemtip"> 奖品数量,此数值为，
+              <span style="color:#ff6f00;"> 抽奖抽出的人数，</span>
+              <span style="color:#ff6666;"> 尽量不要超出四人，否则会使前台显示很诡异 </span> </div>
           </el-form-item>
           <el-form-item label="抽奖截止时间">
             <div class="block">
@@ -49,7 +45,7 @@
               <el-date-picker
                 v-model="Luck.limit_time_unix"
                 type="datetime"
-                placeholder="选择日期时间"
+                :placeholder="limit_time_unix_placeholder"
                 default-time="12:00:00">
               </el-date-picker>
             </div>
@@ -62,13 +58,15 @@
               <el-date-picker
                 v-model="Luck.open_time_unix"
                 type="datetime"
-                placeholder="选择日期时间"
+                :placeholder="open_time_unix_placeholder"
                 default-time="12:00:00">
               </el-date-picker>
             </div>
-            <div class="itemtip"> 开奖时间,大概误差不会超过十分钟 </div>
+            <div class="itemtip"> 开奖时间,大概误差不会超过十分钟
+              <span style="color:#ff6f00;">请务必保证截止时间与开奖时间间隔超过10分钟，
+                <span style="color:#ff6666;">否则会产生不可避免的错误 ！！</span></span></div>
           </el-form-item>
-
+          <!-- <el-button @click="buttom">取消</el-button> -->
           <el-form-item label="活动详情页">
             <template>
                   <div style="margin-top:-30px;">
@@ -150,6 +148,9 @@ export default {
   name:"LuckDrawAdd",
   data(){
     return {
+      id: 0,
+      limit_time_unix_placeholder: '选择日期时间',
+      open_time_unix_placeholder: '选择日期时间',
       uploadToken:{
         token: "",
       },
@@ -179,7 +180,7 @@ export default {
         }
       },
       Luck:{
-        LuckPeople:'', //最多可参与抽奖的人数
+        LuckPeople:'', //最少开奖人数
         LuckDetailEdit: '',
         create_time: '',
         // LimitTimeLocal: [], //限制时间传统格式
@@ -189,7 +190,6 @@ export default {
         open_time_local: '', //开奖时间
         limit_time_unix: '',
         limit_time_local: '', //抽奖截止时间
-
       },
       goodspage:1,
       goodstotal:0,
@@ -202,55 +202,99 @@ export default {
     }
   },
   mounted(){
+    this.id = this.$route.query.id || 0;
     this.gettoken()
+    if (this.id !== 0) {
+      this.getInfo()
+    }
   },
   methods:{
+    ///////////////////////////////////////////编辑抽奖，按id查找抽奖内容
+    buttom() {
+      console.log(this.LuckGoods);
+    },
+    getInfo() {
+      this.axios.post('luckdraw/findluckinfoByid',{
+        id: this.id
+      }).then(res => {
+        console.log(res);
+        if (res.data.errno == 0) {
+          this.Luck.LuckDetailEdit = res.data.data.luck_goods_detail
+          this.Luck.LuckPeople = res.data.data.luck_people_num
+          this.Luck.LuckGoodsNum = res.data.data.luck_goods_num
+          this.LuckGoods.name = res.data.data.luck_goods_name
+          this.LuckGoods.retail_price = res.data.data.luck_goods_price
+          this.LuckGoods.id = res.data.data.luck_goods_id
+          this.LuckGoods.luck_goods_pic = res.data.data.luck_goods_pic
+          this.limit_time_unix_placeholder = this.timestampToTime(res.data.data.luck_limit_time)
+          this.open_time_unix_placeholder = this.timestampToTime(res.data.data.luck_open_time)
+          this.Luck.open_time_local = res.data.data.luck_open_time
+          this.Luck.limit_time_local = res.data.data.luck_limit_time
+          // this.Luck.LuckPeople = res.data.data.luck_people_num
+          // console.log(res.data.data.luck_goods_detail);
+        }
+      })
+    },
+    timestampToTime(timestamp) {
+        var date = new Date(timestamp * 1);
+        var Y = date.getFullYear() + '/';
+        var M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '/';
+        var D = (date.getDate() < 10 ? '0'+date.getDate() : date.getDate()) + '  ';
+        var h = (date.getHours() < 10 ? '0'+date.getHours() : date.getHours()) + ':';
+        var m = (date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes()) + ':';
+        var s = (date.getSeconds() < 10 ? '0'+date.getSeconds() : date.getSeconds());
+        return Y+M+D+h+m+s;
+    },
     onSubmitInfo(){
-      // console.log(this.Luck.open_time_unix);
-      if (this.LuckGoodsList.length == 0) {
-        this.$message.error('请选择抽奖商品 !')
-        return false
-      }
-      if (this.Luck.open_time_unix && this.Luck.limit_time_unix) {
-        this.Luck.open_time_local = new Date(this.Luck.open_time_unix).getTime()
-        this.Luck.limit_time_local = new Date(this.Luck.limit_time_unix).getTime()
-      }else {
-        this.$message.error('请填写截止时间和开奖时间 !')
-        return false
-      }
-      if (this.Luck.open_time_local < this.Luck.limit_time_local) {
-        this.$message.error('截止时间不能大于开奖时间 !')
-        return false
-      }
-      if (this.Luck.LuckPeople < 1 || this.Luck.LuckPeople > 1000) {
-        this.$message.error('参与人数在 1 ~ 999 人之间 !')
-        return false
-      }
-      if (this.Luck.LuckGoodsNum == '' ) {
-        this.$message.error('请输入奖品数量 !')
-        return false
-      }
-      if (this.Luck.LuckGoodsNum > this.Luck.LuckPeople ) {
-        this.$message.error('奖品数量不能大于参与人数 !')
-        return false
-      }
       console.log(this.LuckGoodsList);
       console.log(this.Luck.limit_time_local);
       console.log(this.Luck.open_time_local);
       console.log(this.Luck.LuckDetailEdit);
       console.log(this.Luck.LuckGoodsNum);
       console.log(this.Luck.LuckPeople);
+      console.log(this.LuckGoods.name);
+      // console.log(this.Luck.open_time_unix);
+      if (this.LuckGoodsList.length == 0) {
+        if (this.LuckGoods.name == '') {
+          this.$message.error('请选择抽奖商品 !')
+          return false
+        }else {
+        }
+      }
+      if (this.Luck.open_time_unix && this.Luck.limit_time_unix) {
+        this.Luck.open_time_local = new Date(this.Luck.open_time_unix).getTime()
+        this.Luck.limit_time_local = new Date(this.Luck.limit_time_unix).getTime()
+      }else {
+        if (this.id == 0) {
+          this.$message.error('请填写截止时间和开奖时间 !')
+          return false
+        }else {
+
+        }
+      }
+      if (this.Luck.open_time_local < this.Luck.limit_time_local) {
+        this.$message.error('截止时间不能大于开奖时间 !')
+        return false
+      }
+      if (this.Luck.LuckPeople < 1 || this.Luck.LuckPeople > 1000) {
+        this.$message.error('开奖人数在 1 ~ 999 人之间 !')
+        return false
+      }
+      if (this.Luck.LuckGoodsNum == '' ) {
+        this.$message.error('请输入奖品数量 !')
+        return false
+      }
+      if (parseInt(this.Luck.LuckGoodsNum) > parseInt(this.Luck.LuckPeople) ) {
+        this.$message.error('奖品数量不能大于开奖人数 !')
+        return false
+      }
       this.Luck.create_time = new Date().getTime()
       this.axios.post('luckdraw/luckstore',{
         Luck:this.Luck,
         goods:this.LuckGoods
       }).then((res) => {
         console.log(res);
-        if (res.data.errno === 17) {
-          this.$message.error({
-            message: '此商品的抽奖已存在 !'
-          });
-        }else if (res.data.errno === 0) {
+        if (res.data.errno === 0) {
           this.$message({
             type: 'success',
             message: '添加成功!'

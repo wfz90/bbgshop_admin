@@ -14,7 +14,7 @@
       <div class="content-main">
         <el-form label-width="180px">
           <el-form-item label="发起拼团商品" >
-            <el-input @focus="showCollageGoodsPopup" v-model="CollageGoods.name" placeholder="点击选择拼团商品" >
+            <el-input :disabled="is_edit" @focus="showCollageGoodsPopup" v-model="CollageGoods.name" placeholder="点击选择拼团商品" >
             </el-input>
           </el-form-item>
           <el-form-item label="商品原价">
@@ -37,17 +37,16 @@
             <el-input type="number" style="width:125px;" v-model="Collage.CollagePeople" :min="1" > </el-input>
             <div class="itemtip"> 达到此数值即拼团成功 </div>
           </el-form-item>
-          <el-form-item label="是否开启虚拟成团">
+          <!-- <el-form-item label="是否开启虚拟成团">
             <el-switch
               v-model="Collage.Virtual"
               on-color="#13ce66"
               off-color="#ff4949">
             </el-switch>
-            <!-- <el-input type="number" style="width:125px;" v-model="Collage.CollagePeople" :min="1" > </el-input> -->
             <div class="itemtip"> 系统帮助用户添加拼团成员 </div>
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item label="用户拼团持续时间">
-             <el-input type="number" placeholder="" style="width:140px;" :min="0" v-model="Collage.CollageUserDuration">
+             <el-input :disabled="is_edit" type="number" placeholder="" style="width:140px;" :min="0" v-model="Collage.CollageUserDuration">
                <template slot="append">小时</template>
             </el-input>
           </el-form-item>
@@ -132,6 +131,8 @@ export default {
   name:"CollageAdd",
   data(){
     return {
+      id: 0,
+      is_edit: false,
       uploadToken:{
         token: "",
       },
@@ -167,6 +168,7 @@ export default {
         Virtual: true,
         VirtualLocal: 1,
         create_time: '',
+        CollageInitNumber: '',
         // LimitTimeLocal: [], //限制时间传统格式
         // LimitTimeUnix: [], //限制时间 时间戳
         CollageUserDuration: '',//用户可持续拼团的时间
@@ -183,50 +185,108 @@ export default {
     }
   },
   mounted(){
+    this.id = this.$route.query.id || 0;
+    if (this.id !== 0) {
+      this.is_edit = true
+      this.getInfo()
+    }
     this.gettoken()
   },
   methods:{
-    onSubmitInfo(){
-      if (this.CollageGoodsList.length == 0) {
-        this.$message.error('请选择拼团商品！')
-        return false
-      }
-      if (this.Collage.CollageMinPrice == '') {
-        this.$message.error('请输入拼团价！')
-        return false
-      }
-      if (this.Collage.CollageInitNumber == '') {
-        this.$message.error('请输入最多发起次数！')
-        return false
-      }
-      if (this.Collage.CollagePeople == '') {
-        this.$message.error('请输入拼团人数！')
-        return false
-      }
-      if (this.Collage.CollageUserDuration == '') {
-        this.$message.error('请输入用户可持续拼团的时间！')
-        return false
-      }else{
-        this.Collage.CollageUserDurationUnix = this.Collage.CollageUserDuration * 3600000
-      }
-      this.Collage.create_time = new Date().getTime()
-      this.Collage.retail_price = this.CollageGoods.retail_price
-      this.Collage.VirtualLocal = this.Collage.Virtual == true ? 1 : 0
-      console.log(this.CollageGoodsList);
-      console.log(this.Collage);
-      this.axios.post('collage/collagestore',{
-        collage:this.Collage,
-        goods:this.CollageGoods
-      }).then((res) => {
+    //////////////////////////////////编辑是按id获取信息
+    getInfo() {
+      this.axios.post('collage/findcollageinfoById',{
+        id: this.id
+      }).then(res => {
         console.log(res);
-        this.$message({
-          type: 'success',
-          message: '添加成功!'
-        });
-        this.goBackPage()
-
+        this.CollageGoods.name = res.data.data.goods_name
+        this.CollageGoods.retail_price = res.data.data.retail_price
+        this.Collage.CollageMinPrice = res.data.data.collage_price
+        // this.Collage.CollagePeople = res.data.data.least_coll_num
+        this.Collage.CollageDetailEdit = res.data.data.activity_detail
+        this.Collage.CollageInitNumber = res.data.data.most_init_num
+        this.Collage.CollagePeople = res.data.data.least_coll_num
+        this.Collage.CollageUserDuration = (res.data.data.user_duration_time / 3600000)
+        // this.Collage.CollageMinPrice = res.data.data.collage_price
+        // this.Collage.CollageMinPrice = res.data.data.collage_price
       })
+    },
+    onSubmitInfo(){
+      if (this.id !== 0) { //更新
+        if (this.Collage.CollageMinPrice == '') {
+          this.$message.error('请输入拼团价 ！')
+          return false
+        }
+        if (this.Collage.CollageInitNumber == '') {
+          this.$message.error('请输入最多发起次数 ！')
+          return false
+        }
+        if (this.Collage.CollagePeople == '') {
+          this.$message.error('请输入拼团人数 ！')
+          return false
+        }
+        if (this.Collage.CollageDetailEdit == '') {
+          this.$message.error('请输入活动详情页 ！')
+          return false
+        }
+        this.axios.post('collage/collageupdate',{
+          collage:this.Collage,
+          id: this.id,
+          // goods:this.CollageGoods
+        }).then((res) => {
+          console.log(res);
+          if (res.data.errno === 0) {
+            this.$message({
+              type: 'success',
+              message: '更新成功!'
+            });
+            this.goBackPage()
+          }else {
+            this.$message.error("异常 ！ 请退出 ！")
+          }
 
+        })
+      }else { //创建
+        if (this.CollageGoodsList.length == 0) {
+          this.$message.error('请选择拼团商品！')
+          return false
+        }
+        if (this.Collage.CollageMinPrice == '') {
+          this.$message.error('请输入拼团价！')
+          return false
+        }
+        if (this.Collage.CollageInitNumber == '') {
+          this.$message.error('请输入最多发起次数！')
+          return false
+        }
+        if (this.Collage.CollagePeople == '') {
+          this.$message.error('请输入拼团人数！')
+          return false
+        }
+        if (this.Collage.CollageUserDuration == '') {
+          this.$message.error('请输入用户可持续拼团的时间！')
+          return false
+        }else{
+          this.Collage.CollageUserDurationUnix = this.Collage.CollageUserDuration * 3600000
+        }
+        this.Collage.create_time = new Date().getTime()
+        this.Collage.retail_price = this.CollageGoods.retail_price
+        this.Collage.VirtualLocal = this.Collage.Virtual == true ? 1 : 0
+        console.log(this.CollageGoodsList);
+        console.log(this.Collage);
+        this.axios.post('collage/collagestore',{
+          collage:this.Collage,
+          goods:this.CollageGoods
+        }).then((res) => {
+          console.log(res);
+          this.$message({
+            type: 'success',
+            message: '添加成功!'
+          });
+          this.goBackPage()
+
+        })
+       }
     },
     onEditorChange(e) {
       this.Collage.CollageDetailEdit = e.html

@@ -41,25 +41,22 @@ Vue.use(VueAxios, Axios);
 // Vue.use(Vant);
 // Vue.use(Element);
 
-// header('Access-Control-Allow-Origin:*');
 router.beforeEach((to, from, next) => {
-
-	// let token = localStorage.getItem('token') || '';
 	let token = sessionStorage.getItem('token') || '';
-    // 配置接口信息
+//     // 配置接口信息
 		Axios.defaults.baseURL = 'http://127.0.0.1:8360/admin/';
     Axios.defaults.headers.common['X-Nideshop-Token'] = token;
 
-			if (!token && to.name !== 'login') {
-				console.log('重定向');
-				next({
-					path: '/login',
-					query: { redirect: to.fullPath }
-				})
-			} else {
+		if (!token && to.name !== 'login') {
+			console.log('重定向');
+			next({
+				path: '/login',
+				query: { redirect: to.fullPath }
+			})
+		} else {
 				next()
-			}
-		});
+		}
+});
 
 Vue.config.productionTip = false
 
