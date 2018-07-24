@@ -51,6 +51,11 @@
                 {{tableData[scope.$index].launched_num}}
               </template>
             </el-table-column>
+            <el-table-column align="center" label="已参与" width="90">
+              <template slot-scope="scope">
+                {{tableData[scope.$index].participate_num}}
+              </template>
+            </el-table-column>
             <el-table-column align="center" label="已购买" width="90">
               <template slot-scope="scope">
                 {{tableData[scope.$index].purchased_num}}

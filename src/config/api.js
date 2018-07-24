@@ -1,15 +1,18 @@
-const rootUrl = 'http://127.0.0.1:8360/admin/';
-// http://127.0.0.1:8360/admin/upload/brandPic
-const api = {
-      LoginPath:rootUrl+'admin/auth/login',
-      IndexBarPic:rootUrl+'upload/brandPic',
-      WapBannerPic:rootUrl+'upload/brandPic',
-      GoodsMainImg:rootUrl+'upload/brandPic',
-      GoodsLoopImg:rootUrl+'upload/brandPic',
-      GoodsDetailImg:rootUrl+'upload/brandPic',
-};
-
-export default {
-  api,
-  rootUrl,
-}
+// // const rootUrl = 'https://ytshopapi.bbgshop.com/admin/';
+// // const rootUrl = 'https://shopapi.bbgshop.com/admin/';
+//
+//
+// const api = {
+//       // LoginPath:'https://ytshopapi.bbgshop.com/admin/auth/login',
+//       // LoginPath:'https://shopapi.bbgshop.com/admin/auth/login',
+//       // IndexBarPic:rootUrl+'upload/brandPic',
+//       // WapBannerPic:rootUrl+'upload/brandPic',
+//       // GoodsMainImg:rootUrl+'upload/brandPic',
+//       // GoodsLoopImg:rootUrl+'upload/brandPic',
+//       // GoodsDetailImg:rootUrl+'upload/brandPic',
+// };
+//
+// export default {
+//   api,
+//   rootUrl,
+// }

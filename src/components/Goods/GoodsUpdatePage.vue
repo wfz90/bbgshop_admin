@@ -195,11 +195,45 @@
             <span style="color:#ff6666;">默认为价格值的 1.22 倍</span>
           </div>
         </el-form-item>
+        <el-form-item label="成本价">
+          <el-input type="number" :min="1" v-model="infoForm.cost_price" placeholder="设置成本价"></el-input>
+          <div class="form-tips">
+            此价格为该商品的<span style="color:#ff6f00;">成本价格，不参与前台计算，仅存储</span> ，
+            <span style="color:#ff6666;">默认为价格值的 0.88 倍</span>
+          </div>
+        </el-form-item>
         <el-form-item label="库存">
           <el-input type="number" :min="0" v-model="infoForm.num" placeholder="设置库存"></el-input>
           <div class="form-tips">
-            此库存为显示在商品列表中的库存，<span style="color:#ff6666;">默认为规格种类的库存最小值</span>
+            此库存为显示在商品列表中的库存，<span style="color:#ff6666;">默认为规格种类的库存累计值</span>
           </div>
+        </el-form-item>
+
+        <el-form-item label="运费">
+          <el-radio-group v-model="infoForm.freight_type" @change='fright_model_changed'>
+            <el-radio :label="0">统一运费</el-radio>
+            <el-radio :label="1">运费模板</el-radio>
+          </el-radio-group>
+          <div class="" v-if="infoForm.freight_type == 0" style="margin-top:5px;">
+            <el-input type="number" :min="0" v-model="infoForm.freight_price" placeholder="设置统一运费"></el-input>
+            <div class="form-tips">
+              用户下单时会<span style="color:#ff6666;"> 加上此数值 </span>
+            </div>
+          </div>
+          <div class="" style="margin-top:5px;" v-if="infoForm.freight_type == 1">
+            <el-select v-model="infoForm.freight_template" placeholder="请选择运费模板" @change='fright_model_select_changed'>
+              <el-option
+                v-for="item in fright_templete"
+                :key="item.id"
+                :label="item.temp_name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+            <div class="form-tips">
+              用户下单时会<span style="color:#ff6666;"> 按此模板计算运费 </span>
+            </div>
+          </div>
+
         </el-form-item>
         <el-form-item label="上架">
           <el-switch on-text="" off-text="" v-model="infoForm.sale"></el-switch>
@@ -210,6 +244,13 @@
         <el-form-item label="人气">
           <el-switch on-text="" off-text="" v-model="infoForm.hot"></el-switch>
         </el-form-item>
+        <el-form-item label="排序">
+          <el-input type="number" :min="0" v-model="infoForm.short_order" placeholder="设置权重"></el-input>
+          <div class="form-tips">
+            请注意：<span style="color:#ff6666;"> 数值越大则会显示在最前面 </span>
+          </div>
+        </el-form-item>
+
         <el-form-item>
           <!-- <el-button @click="showSku">规格</el-button> -->
           <el-button type="primary" @click="onSubmitInfo">确定保存</el-button>
@@ -238,6 +279,10 @@ export default {
   data() {
     return {
       goodsId: 0,
+      // fright_model: 0,//运费的默认选项
+      fright_model_select: '',//运费模板下拉列表的绑定值
+      fright_templete: [],//运费模板列表
+      // select_freight_tem_id: '',//用户选中的运费模板的 下拉类表项
       sync_price: '',//批量设置的价格
       sync_stock: '',//批量设置的库存
       del_value: '',//用户删除的value值 ，用来更新表格数据
@@ -275,6 +320,11 @@ export default {
         is_sale: 0,
         is_hot: 0,
         is_new: 0,
+        freight_price: 0.00,
+        freight_template: '',
+        cost_price: 0.00,
+        freight_type: 0,
+        short_order: 0,
       },
       quillUpdateImg: false, // 根据图片上传状态来确定是否显示loading动画，刚开始是false,不显示
       //富文本配置
@@ -331,6 +381,25 @@ export default {
     this.findGoodsClassifyFirst()
   },
   methods: {
+    //运费模板项改变
+    fright_model_select_changed(e) {
+      // this.infoForm.freight_template = e
+      console.log(this.infoForm.freight_template);
+    },
+    //运费设置更改
+    fright_model_changed(e) {
+      // this.infoForm.freight = 0.00
+      if (e == 1) {
+        this.axios.post('goodsUpdate/getfrighttempletelist').then(res => {
+          console.log(res);
+          this.fright_templete = res.data.data
+        })
+      }else {
+        // this.fright_templete = []
+      }
+      // console.log(this.infoForm.freight);
+      // console.log(this.infoForm.freight_type);
+    },
     //提交表单
     onSubmitInfo() {
       this.infoForm.is_sale = this.infoForm.sale ? 1 : 0
@@ -344,8 +413,20 @@ export default {
         this.$message.error("请选择分类 ！")
         return false
       }
+      if (this.infoForm.freight_type == 0 && Number(this.infoForm.freight_price) < 0) {
+        this.$message.error("运费设置有误 ！")
+        return false
+      }
+      if (this.infoForm.freight_type == 1 &&( this.infoForm.freight_template == '' || Number(this.infoForm.freight_template == 0))) {
+        this.$message.error("运费设置有误 ！")
+        return false
+      }
+      if (Number(this.infoForm.short_order) < 0) {
+        this.$message.error("排序不能小于 0 ！")
+        return false
+      }
       if(this.infoForm.name == '' || this.infoForm.brief == '' || this.infoForm.desc == ''
-      || this.infoForm.num < 0 || this.infoForm.main_img == '' || this.infoForm.loop_img.length == 0){
+      || this.infoForm.num < 0 || this.infoForm.main_img == '' || this.infoForm.loop_img.length == 0 ){
         this.$message.error("信息不完整 ！")
         return false
       }
@@ -438,10 +519,11 @@ export default {
       for (var i = 0; i < this.tableData.length; i++) {
         this.tableData[i].stock = this.sync_stock
       }
-      this.infoForm.num = this.sync_stock
+      this.infoForm.num = this.sync_stock * this.tableData.length
     },
     changePrices() {
       this.infoForm.extraPrice = (parseInt(this.infoForm.price) * 1.22).toFixed(2)
+      this.infoForm.cost_price = (parseInt(this.infoForm.price) * 0.88).toFixed(2)
     },
     InputPrice(index,row) {
       var minprice = this.tableData[0].price
@@ -455,13 +537,16 @@ export default {
       this.updateTableData()
     },
     InputStock(index,row) {
-      var minstock = this.tableData[0].stock
+      // var minstock = this.tableData[0].stock
+      let num = 0
       for (var i = 0; i < this.tableData.length; i++) {
-        if ((this.tableData[i].stock - minstock) < 0) {
-          minstock = this.tableData[i].stock
-        }
+        num = Number(this.tableData[i].stock) + Number(num)
+        // if ((this.tableData[i].stock - minstock) < 0) {
+        //   minstock = this.tableData[i].stock
+        // }
       }
-      this.infoForm.num = minstock
+      // this.infoForm.num = minstock
+      this.infoForm.num = num
       this.updateTableData()
       // console.log(this.tableData);
     },
@@ -847,6 +932,11 @@ export default {
         this.infoForm.brief = res.data.data.goodsInfo.goods_brief
         this.infoForm.price = res.data.data.goodsInfo.retail_price
         this.infoForm.extraPrice = res.data.data.goodsInfo.extra_price
+        this.infoForm.cost_price = res.data.data.goodsInfo.cost_price
+        this.infoForm.freight_price = res.data.data.goodsInfo.freight_price
+        this.infoForm.freight_type = res.data.data.goodsInfo.freight_type
+        this.infoForm.freight_template = res.data.data.goodsInfo.freight_template
+        this.infoForm.short_order = res.data.data.goodsInfo.short_order
         this.infoForm.num = res.data.data.goodsInfo.goods_number
         this.infoForm.is_sale = res.data.data.goodsInfo.is_on_sale
         this.infoForm.is_hot = res.data.data.goodsInfo.is_hot

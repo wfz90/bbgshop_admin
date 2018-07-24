@@ -69,7 +69,11 @@
                 </template>
                 <el-menu-item index="/dashboard/loopindex">
                     <i class="fa fa-circle"></i>
-                    <span>首页轮播图管理</span>
+                    <span>首页轮播</span>
+                </el-menu-item>
+                <el-menu-item index="/dashboard/FreightTemPage">
+                    <i class="fa fa-circle"></i>
+                    <span>运费模板</span>
                 </el-menu-item>
                 <el-menu-item index="/dashboard/GoodsQuestionPage">
                     <i class="fa fa-circle"></i>

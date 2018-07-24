@@ -196,6 +196,7 @@ export default {
      },
      //删除
      handleRowDelete(index,row){
+       console.log(row);
        this.$confirm('此操作将永久删除此抽奖信息 ！, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',

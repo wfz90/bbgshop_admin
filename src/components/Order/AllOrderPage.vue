@@ -243,14 +243,17 @@
                         </el-tooltip>
                       </template>
                     </el-table-column>
-                    <el-table-column label="操作" width="250" align="center" >
+                    <el-table-column label="操作" width="280" align="center" >
                         <template slot-scope="scope">
                             <el-button size="small" @click="Message(scope.$index, scope.row)" v-if="scope.row.order_status == 0">留言</el-button>
                             <el-button size="small" @click="ChageAddress(scope.$index, scope.row)" v-if="scope.row.order_status == 0">改地址</el-button>
-                            <el-button size="small" v-if="scope.row.pay_id == 0 && scope.row.order_status == 201 && scope.row.refund.abled == 1"
+                            <el-button size="small" @click="ChagePrice(scope.$index, scope.row)" v-if="scope.row.order_status == 0">改价格</el-button>
+                            <el-button size="small" v-if="scope.row.pay_id == 0 && scope.row.order_status == 201 "
                             type="info" @click="Sendout(scope.$index, scope.row)">发货</el-button>
-                            <el-button size="small" v-if="scope.row.pay_id == 0 && scope.row.order_status == 201 && scope.row.refund.state == 1017"
-                            type="info" @click="Sendout(scope.$index, scope.row)">发货</el-button>
+                            <!-- <el-button size="small" v-if="scope.row.pay_id == 0 && scope.row.order_status == 201 && scope.row.refund.abled == 1" -->
+                            <!-- type="info" @click="Sendout(scope.$index, scope.row)">发货</el-button> -->
+                            <!-- <el-button size="small" v-if="scope.row.pay_id == 0 && scope.row.order_status == 201 && scope.row.refund.state == 1017" -->
+                            <!-- type="info" @click="Sendout(scope.$index, scope.row)">发货</el-button> -->
                             <el-button size="small" v-if="scope.row.pay_id == 2 && scope.row.collage_is_success == 1 && scope.row.order_status == 201"
                             type="info" @click="Sendout(scope.$index, scope.row)">发货</el-button>
                             <el-button size="small" v-if="scope.row.pay_id == 3 && scope.row.order_status == 201"
@@ -277,7 +280,56 @@
                 </el-pagination>
             </div>
         </div>
-
+        <!-- 修改订单价格 -->
+        <van-popup v-model="chage_price_popup">
+          <div class="ChagePrice_area">
+            <div class="ChagePrice_area_title">
+              订单列表 <span style="font-size:11px;font-weight:normal;color:#757575;"> (修改订单价格)</span>
+            </div>
+            <div class="ChageAddress_area">
+                <div class="BuyPeople_Info">
+                  <span style="float:left">
+                  <span style="font-size:12px;color:#757575;">买家：</span>
+                  <span style="font-weight:bold">{{user_info.nickname}}</span>
+                </span>
+                <span style="float:right">
+                  <span style="font-size:12px;color:#757575;font-weight:bold">{{order_info.local_time}}</span>
+                  <!-- <span style="font-weight:bold">{{user_info.nickname}}</span> -->
+                </span>
+              </div>
+              <div style="font-size:12px;color:#757575;width:95%;margin:auto;margin-top:15px;">订单编号：{{order_info.order_sn}}</div>
+              <div class="change_price_area">
+                <div class="change_price_goods" v-for="item in goodslist" :key="item.id">
+                  <img class="change_price_goods_img"  :src="item.list_pic_url" alt="">
+                  <div class="change_price_goods_name">{{item.goods_name}}</div>
+                  <div class="change_price_goods_price"> ￥ <span class="big">{{item.retail_price}}</span></div>
+                  <div class="change_price_goods_sku">{{item.goods_specifition_name_value}} x{{item.number}}
+                  </div>
+                </div>
+              </div>
+              <div class="change_price">
+                <div class="change_price_left">
+                  订单总金额
+                </div>
+                <div class="change_price_right">
+                  ￥ <span class="big">{{order_info.actual_price}}</span>
+                </div>
+              </div>
+              <div class="change_input_area">
+                <div class="change_input_area_left">
+                  修改订单价格
+                </div>
+                <!-- <div class="change_input_area_right"> -->
+                <el-input class="change_input_area_right" v-model="changed_price_input" @change="change_price_input" placeholder="请输入修改价格"></el-input>
+                <!-- </div> -->
+              </div>
+              <div class="change_input_area_btnarea">
+                <el-button type="primary" plain @click='closechangeprice'>取消</el-button>
+                <el-button type="danger" :disabled='price_reg' @click="sure_change_price">确认修改</el-button>
+              </div>
+            </div>
+          </div>
+        </van-popup>
         <!-- // 修改收货地址弹层 -->
         <van-popup v-model="chage_address_popup">
           <div class="ChagePrice_area">
@@ -562,6 +614,8 @@ import { Toast } from 'vant'
   export default {
     data() {
       return {
+        price_reg: true,//确认按钮状态
+        changed_price_input: '',//修改的价格
         page: 1,
         total: 0,
         // looptime: '00:00',
@@ -597,6 +651,7 @@ import { Toast } from 'vant'
         limit_day: [],
         limit_day_unix: [0,0],
         refundtype: 0,
+        chage_price_popup: false,
         dialogVisible: false,
         seeRefundPopover: false,
         seelogic_popup: false,
@@ -695,30 +750,151 @@ import { Toast } from 'vant'
       }
     },
     methods: {
-      Sendlogic(index,row) {
-        // console.log("查看物流");
-        // openFullScreen2() {
-      // }
-      const loading = this.$loading({
-          lock: true,
-          text: 'Loading',
-          spinner: 'el-icon-loading',
-          background: 'rgba(0, 0, 0, 0.7)'
-        });
-        console.log(row);
-        this.axios.post('order/express',{
-          orderId: row.id
-        }).then(res => {
-          console.log(res);
-          if (res.data.errno === 0) {
-            loading.close();
-            this.seelogic_popup = true
-            this.order_info = row
-            this.logic_info = res.data.data
+      //以下为修改价格//////////////////////////////////////\]
+      sure_change_price() {
+        if (Number(this.changed_price_input) > Number(this.order_info.actual_price)) {
+            this.$confirm('输入价格大于订单总价，是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+              const loading = this.$loading({
+              lock: true,
+              text: 'Loading',
+              spinner: 'el-icon-loading',
+              background: 'rgba(255, 255, 255, 0.7)'
+            });
+              this.axios.post('order/changeorderprice',{
+                id: this.order_info.id,
+                price: this.changed_price_input
+              }).then(res => {
+                console.log(res);
+                if (res.data.errno === 0) {
+                  Toast('修改成功 !')
+                  this.$notify({
+                    title: '成功',
+                    message: '修改成功 ！',
+                    type: 'success'
+                  });
+                  this.getList()
+                  this.closechangeprice()
+                  loading.close()
+                }else{
+                  Toast('修改失败 !')
+                  this.$notify.error({
+                     title: '错误',
+                     message: '修改失败 ！'
+                   });
+                  loading.close()
+                }
+              })
+            }).catch(() => {
+              this.$message({
+                type: 'info',
+                message: '取消修改 !'
+              });
+            });
           }else {
-            // Toast("异常 !")
-          }
+            this.$confirm('您即将修改订单价格，是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            const loading = this.$loading({
+            lock: true,
+            text: 'Loading',
+            spinner: 'el-icon-loading',
+            background: 'rgba(255, 255, 255, 0.7)'
+          });
+            this.axios.post('order/changeorderprice',{
+              id: this.order_info.id,
+              price: this.changed_price_input
+            }).then(res => {
+              console.log(res);
+              if (res.data.errno === 0) {
+                Toast('修改成功 !')
+                this.$notify({
+                  title: '成功',
+                  message: '修改成功 ！',
+                  type: 'success'
+                });
+                this.getList()
+                this.closechangeprice()
+                loading.close()
+              }else{
+                Toast('修改失败 !')
+                this.$notify.error({
+                   title: '错误',
+                   message: '修改失败 ！'
+                 });
+                loading.close()
+              }
+            })
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '取消修改 !'
+            });
+          });
+        }
+      },
+      closechangeprice() {
+        this.price_reg = true
+        this.chage_price_popup = false
+        this.changed_price_input = ''
+      },
+      change_price_input(e) {
+        console.log(e);
+        let reg = /^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/
+        // reg.test('bc');
+        if (reg.test(e)) {
+          // console.log('匹配');
+          this.price_reg = false
+        }else {
+          // console.log('不匹配');
+          this.price_reg = true
+        }
+
+      },
+      ChagePrice(index,row) {
+        console.log(index,row);
+        this.axios.post('order/findpendpaygoodslist', {
+          orderid: row.id
+        }).then((res) => {
+          console.log(res);
+          this.order_info = res.data.data.goodsPrice
+          // let obj = {}
+          this.order_info.local_time = this.timestampToTime(res.data.data.goodsPrice.add_time)
+          this.goodslist = res.data.data.goodslist
+          this.user_info = res.data.data.user
+          // console.log(this.user_info);
+          // console.log(this.order_info);
         })
+        // this.chage_address_popup = true
+        this.chage_price_popup = true
+      },
+      ///以下为查看物流///////////////////////////////////
+      Sendlogic(index,row) {
+        const loading = this.$loading({
+            lock: true,
+            text: 'Loading',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
+          console.log(row);
+          this.axios.post('order/express',{
+            orderId: row.id
+          }).then(res => {
+            console.log(res);
+            if (res.data.errno === 0) {
+              loading.close();
+              this.seelogic_popup = true
+              this.order_info = row
+              this.logic_info = res.data.data
+            }else {
+              // Toast("异常 !")
+            }
+          })
       },
       // 以下为筛选///////////////////////////////////////////////////////////
       ClierFilter() {
@@ -809,15 +985,16 @@ import { Toast } from 'vant'
                   time: refund_time
                 }).then((res) => {
                   console.log(res);
+                  this.$message({
+                    type: 'success',
+                    message: '退款成功!'
+                  });
+                  this.getList()
+                  loading.close()
+                  this.seeRefundPopover = false
                 })
-                this.$message({
-                  type: 'success',
-                  message: '退款成功!'
-                });
-                loading.close()
-                this.getList()
-                this.seeRefundPopover = false
               }
+
             })
           }).catch(() => {
           });
@@ -1222,7 +1399,124 @@ import { Toast } from 'vant'
 </script>
 
 <style >
+/* 以下为修改价格 */
+.change_input_area_btnarea {
+  height: 50px;
+  /* border: 1px solid black; */
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 
+}
+.change_input_area_right {
+  /* height: 26px; */
+  /* line-height: 26px; */
+  float: right;
+  width: 150px;
+  margin-right: 5px;
+}
+.change_input_area_left {
+  /* height: 26px; */
+  /* line-height: 26px; */
+  float: left;
+  margin-left: 5px;
+  font-size: 13px;
+  color: #757575;
+}
+.change_input_area {
+  border-bottom: 1px solid #eee;
+  /* border:1px solid black; */
+  height: 40px;
+  line-height: 40px;
+  margin-bottom: 12px;
+
+}
+.change_price_right {
+  /* border:1px solid black; */
+  height: 26px;
+  line-height: 26px;
+  float: right;
+  margin-right: 5px;
+
+}
+.change_price_left {
+  /* border:1px solid black; */
+  height: 26px;
+  line-height: 26px;
+  float: left;
+  margin-left: 5px;
+
+}
+.change_price {
+  /* border: 1px solid black; */
+  border-bottom: 1px solid #eee;
+  height: 26px;
+  line-height: 26px;
+  font-size: 13px;
+  color: #757575;
+  margin-bottom: 12px;
+
+}
+.change_price_goods_sku {
+  position: absolute;
+  /* border:1px solid black; */
+  bottom: 4px;
+  left: 135px;
+  color: #757575;
+  font-size: 10px;
+}
+.change_price_goods_price .big,.change_price_right .big {
+  color: #ff5566;
+  font-weight: bold;
+  font-size: 24px;
+}
+.change_price_goods_price {
+  position: absolute;
+  /* border:1px solid black; */
+  bottom: 4px;
+  right: 6px;
+  height: 24px;
+  font-size: 10px;
+  color: #757575;
+
+}
+.change_price_goods_name {
+  position: absolute;
+  /* border:1px solid black; */
+  line-height: 20px;
+  max-height: 46px;
+  font-size: 15px;
+  top: 4px;
+  right: 6px;
+  left: 135px;
+  overflow : hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.change_price_goods_img {
+  /* border:1px solid black; */
+  position: absolute;
+  width: 120px;
+  height: 82px;
+  top: 4px;
+  left: 6px;
+}
+.change_price_goods {
+  /* border: 1px solid black; */
+  border-top: 1px solid #eee;
+  height: 90px;
+  position: relative;
+}
+.change_price_area {
+  border: 1px solid #eee;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  max-height: 112px;
+  overflow-y: auto;
+}
+/* 、、、、、、、、、、、、、、、、、 */
 .one_row_overflow_refundcollage {
   color: #ff5722;
   font-weight: bold;

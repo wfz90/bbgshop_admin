@@ -46,20 +46,76 @@
       </el-select>
     </div>
     <div class="form-table-box">
-      <el-table :data="tableData" :default-sort="{prop: 'retail_price', order: 'descending'}" style="width: 100%" border stripe>
+      <el-table :data="tableData" @cell-dblclick='doubleclick' :default-sort="{prop: 'retail_price', order: 'descending'}" style="width: 100%" border stripe>
         <!-- <el-table-column prop="id" align="center" sortable label="ID" width="100">
         </el-table-column> -->
         <el-table-column label="商品名称">
           <template slot-scope="scope">
-              {{tableData[scope.$index].name}}
+            <div class="table_box">
+              <img class="table_box_img" :src="tableData[scope.$index].list_pic_url" alt="">
+              <div class="table_box_name" v-if="!row[scope.$index].name_edit">
+                {{tableData[scope.$index].name}}
+              </div>
+              <el-input class="table_box_name_edit" v-if="row[scope.$index].name_edit"
+                type="textarea"
+                @blur="edit_blur"
+                :rows="2"
+                placeholder="请输入商品名称"
+                v-model="tableData[scope.$index].name">
+              </el-input>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="成本价" width="100">
+          <template slot-scope="scope">
+            <div class="" v-if="!row[scope.$index].cost_price_edit">
+              {{tableData[scope.$index].cost_price}}
+            </div>
+            <el-input v-if="row[scope.$index].cost_price_edit"
+            @blur="edit_blur"
+            v-model="tableData[scope.$index].cost_price"
+            placeholder="请输入成本价"></el-input>
           </template>
         </el-table-column>
         <el-table-column align="center" label="售价" width="100">
           <template slot-scope="scope">
-              {{tableData[scope.$index].retail_price}}
+            <div class="" v-if="!row[scope.$index].retail_price_edit">
+              <span class="bold_text">{{tableData[scope.$index].retail_price}}</span>
+            </div>
+            <el-input @blur="edit_blur" v-if="row[scope.$index].retail_price_edit"
+            v-model="tableData[scope.$index].retail_price"
+            placeholder="请输入成本价"></el-input>
           </template>
         </el-table-column>
-        <el-table-column prop="goods_number" label="库存" align="center" width="90">
+        <el-table-column prop="" label="库存" align="center" width="90">
+          <template slot-scope="scope">
+            <div class="" v-if="!row[scope.$index].goods_number_edit">
+              {{tableData[scope.$index].goods_number}}
+            </div>
+            <el-input @blur="edit_blur" v-if="row[scope.$index].goods_number_edit"
+            v-model="tableData[scope.$index].goods_number"
+            placeholder="请输入成本价"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column prop="" label="权重" align="center" width="70">
+          <template slot-scope="scope">
+            <div class="" v-if="!row[scope.$index].short_order_edit">
+              {{tableData[scope.$index].short_order}}
+            </div>
+            <el-input @blur="edit_blur" v-if="row[scope.$index].short_order_edit"
+            v-model="tableData[scope.$index].short_order"
+            placeholder="请输入权重"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="运费" width="100">
+          <template slot-scope="scope">
+            <div class="" v-if="!row[scope.$index].freight_edit">
+              {{tableData[scope.$index].freight_type == 0 ? tableData[scope.$index].freight_price : '运费模板'}}
+            </div>
+            <el-input @blur="edit_blur" v-if="row[scope.$index].freight_edit"
+            v-model="tableData[scope.$index].freight_price"
+            placeholder="请输入成本价"></el-input>
+          </template>
         </el-table-column>
         <el-table-column prop="is_new" label="新品" align="center" width="80">
           <template slot-scope="scope">
@@ -93,7 +149,7 @@
       </el-table>
     </div>
     <div class="page-box">
-      <el-pagination @current-change="handlePageChange" :current-page="page" :page-size="15" layout="total, prev, pager, next, jumper" :total="total">
+      <el-pagination @current-change="handlePageChange" :current-page="page" :page-size="10" layout="total, prev, pager, next, jumper" :total="total">
       </el-pagination>
     </div>
   </div>
@@ -104,6 +160,7 @@
 export default {
   data() {
     return {
+      click_row_index: 0,
       FirstClassifyList: [],
       FirstClassifyId: '',
       SecondClassifyList: [],
@@ -126,6 +183,57 @@ export default {
     }
   },
   methods: {
+    // 以下为单元格双击事件、、、、、、、、、、、、、、、、、、
+    edit_blur(){
+      // console.log("123");
+      let changed_info = this.tableData[this.click_row_index]
+      console.log(changed_info);
+      this.$confirm('此操作将永久修改此信息, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.axios.post('goods/changeinfo',{
+            changed_info: changed_info
+          }).then(res => {
+            console.log(res);
+          })
+          this.getList()
+          // this.tableData[this.click_row_index]
+          this.$message({
+            type: 'success',
+            message: '修改成功 ！'
+          });
+        }).catch(() => {
+          this.getList()
+          this.$message({
+            type: 'info',
+            message: '取消修改 ！'
+          });
+        });
+
+    },
+    doubleclick(row, column, cell){
+      console.log(row, column);
+      for (var i = 0; i < this.row.length; i++) {
+        if (this.row[i].id == row.id) {
+          this.click_row_index = i
+          if (column.label == '商品名称') {
+            this.row[i].name_edit = true
+          }else if(column.label == '成本价'){
+            this.row[i].cost_price_edit = true
+          }else if(column.label == '售价'){
+            this.row[i].retail_price_edit = true
+          }else if(column.label == '运费'){
+            this.row[i].freight_edit = true
+          }else if(column.label == '库存'){
+            this.row[i].goods_number_edit = true
+          }else if(column.label == '权重'){
+            this.row[i].short_order_edit = true
+          }
+        }
+      }
+    },
     ///////////////////////////////////////////以下为分类改变事件
     //清空一级分类事件
     FirstClassifyClear() {
@@ -346,7 +454,6 @@ export default {
       })
     },
     handleRowDelete(index, row) {
-
       this.$confirm('确定要删除?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -381,10 +488,10 @@ export default {
       //
       // }
       this.filterForm.secondClassify = this.SecondClassifyId == '' ? 0 : this.SecondClassifyId
-      console.log(this.filterForm);
-      console.log(this.filterForm.isnew);
-      console.log(this.filterForm.ishot);
-      console.log(this.filterForm.issale);
+      // console.log(this.filterForm);
+      // console.log(this.filterForm.isnew);
+      // console.log(this.filterForm.ishot);
+      // console.log(this.filterForm.issale);
       this.axios.post('goods/index', {
           page: this.page,
           name: this.filterForm.name,
@@ -399,9 +506,16 @@ export default {
         for (var i = 0; i < this.tableData.length; i++) {
           // array[i]
           let obj = {}
+          obj.id = this.tableData[i].id
           obj.is_hot = this.tableData[i].is_hot == 1 ? true : false
           obj.is_new = this.tableData[i].is_new == 1 ? true : false
           obj.is_on_sale = this.tableData[i].is_on_sale == 1 ? true : false
+          obj.name_edit = false
+          obj.cost_price_edit = false
+          obj.retail_price_edit = false
+          obj.freight_edit = false
+          obj.goods_number_edit = false
+          obj.short_order_edit = false
           this.row.push(obj)
         }
         // console.log(this.row);
@@ -422,6 +536,36 @@ export default {
 }
 </script>
 
-<style scoped>
+<style >
+.bold_text {
+  font-weight: bold;
+  color: #ff5566
+}
+.table_box_name_edit {
+  margin: 0px 8px;
+}
+.table_box_name {
+  /* border: 1px solid black; */
+  margin: 0px 8px;
+  line-height: 18px;
+  max-height: 36px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 
+}
+.table_box {
+  /* border: 1px solid black; */
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 3px 0px;
+}
+.table_box_img {
+  width: 60px;
+  height: 60px;
+  /* margin-top: 3.5px; */
+}
 </style>

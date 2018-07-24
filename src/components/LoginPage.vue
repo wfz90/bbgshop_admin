@@ -67,6 +67,7 @@
 
       </div> -->
       <div class="box_body">
+        <!-- <p class="tips">欢迎使用<span style="color:#ff4444;padding:0 5px;font-size:20px;">易天商城吊桥路店</span>后台管理</p> -->
         <p class="tips">欢迎使用<span style="color:#ff4444;padding:0 5px;font-size:20px;">贝堡商城</span>后台管理</p>
         <el-form ref="form" :model="form" :rules="rules" label-position="top">
           <el-form-item label="" prop="username">
@@ -97,8 +98,11 @@
         </el-form>
       </div>
     </div>
-    <div class="text_tips">
+    <!-- <div class="text_tips">
       注：非内部人员不得登录,否则将追究其法律责任 ！
+    </div> -->
+    <div class="text_tips">
+      注：github版本没有人机验证逻辑，有需要请访问<a href="https://www.vaptcha.com/" target="_Blank">手势验证码</a>，取消LoginPage.vue第215行的注释，进行部署 ！
     </div>
   </div>
   <!-- <div class="footer"> -->
@@ -128,7 +132,7 @@
 <!-- <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script> -->
 <!-- <script type="text/javascript" src="https://cdn.vaptcha.com/v.js"></script> -->
 <script>
-import api from '@/config/api';
+// import api from '@/config/api';
 export default {
   data() {
     return {
@@ -209,8 +213,7 @@ export default {
     startLogin() {
       if (!this.form.token) {
         this.$message.error('请进行人机验证！');
-        // alert('请进行人机验证');
-        return false;
+        // return false;
       }
       this.$refs['form'].validate((valid) => {
         if (!valid) {

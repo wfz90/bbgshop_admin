@@ -290,6 +290,7 @@ export default {
       }
       this.Luck.create_time = new Date().getTime()
       this.axios.post('luckdraw/luckstore',{
+        luckId: this.id,
         Luck:this.Luck,
         goods:this.LuckGoods
       }).then((res) => {

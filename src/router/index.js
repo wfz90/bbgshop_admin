@@ -87,6 +87,18 @@ export default new Router({
                     component:resolve => require(['@/components/Other/GoodsQuestionPage'],resolve),
                 },
                 {
+                    path: 'FreightTemPage',
+                    name: 'FreightTemPage',
+                    // component: require('@/components/Other/LoopIndexPage')
+                    component:resolve => require(['@/components/Freight/FreightTemPage'],resolve),
+                },
+                {
+                    path: 'AddFreightTem',
+                    name: 'AddFreightTem',
+                    // component: require('@/components/Other/LoopIndexPage')
+                    component:resolve => require(['@/components/Freight/AddFreightTem'],resolve),
+                },
+                {
                     path: 'loopindex',
                     name: 'loopindex',
                     // component: require('@/components/Other/LoopIndexPage')
@@ -110,12 +122,12 @@ export default new Router({
                     component:resolve => require(['@/components/Goods/GoodsPage'],resolve),
                     // component: require('@/components/Goods/GoodsPage')
                 },
-                {
-                    path: 'goods/add',
-                    name: 'goods_add',
-                    component:resolve => require(['@/components/Goods/GoodsAddPage'],resolve),
-                    // component: require('@/components/Goods/GoodsAddPage')
-                },
+                // {
+                //     path: 'goods/add',
+                //     name: 'goods_add',
+                //     component:resolve => require(['@/components/Goods/GoodsAddPage'],resolve),
+                //     // component: require('@/components/Goods/GoodsAddPage')
+                // },
                 {
                     path: 'category',
                     name: 'category',

@@ -1,4 +1,4 @@
-import Vue from 'vue'
+﻿import Vue from 'vue'
 import Axios from 'axios'
 import VueAxios from 'vue-axios'
 
@@ -44,7 +44,8 @@ Vue.use(VueAxios, Axios);
 router.beforeEach((to, from, next) => {
 	let token = sessionStorage.getItem('token') || '';
 //     // 配置接口信息
-		Axios.defaults.baseURL = 'http://127.0.0.1:8360/admin/';
+		Axios.defaults.baseURL = 'http://127.0.0.1:8360/admin/'; //本地测试接口
+
     Axios.defaults.headers.common['X-Nideshop-Token'] = token;
 
 		if (!token && to.name !== 'login') {
