@@ -29,7 +29,7 @@
               :value="item.id">
             </el-option>
           </el-select>
-          <div class="filter-box" style="float:right;text-align:right">
+          <!-- <div class="filter-box" style="float:right;text-align:right">
             <el-button style="height:36px;line-height:36px;padding:0 15px;" v-if="ratechange" type="info" plain>当前佣金返还率
              <span style="color:#ff4444;font-weight:bold;font-size:18px;">{{localrate}}</span>
              %</el-button>
@@ -45,7 +45,7 @@
              <el-button style="margin-top:-5px !important;" v-if="ratechange && rateprice" type="info" plain @click="changeopen">修改</el-button>
              <el-button v-if="!ratechange && !rateprice" type="info" plain @click="canelrate">取消</el-button>
              <el-button v-if="!ratechange && !rateprice" type="danger" @click="changerate">完成</el-button>
-          </div>
+          </div> -->
 
 
           <div class="form-table-box">

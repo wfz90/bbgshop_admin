@@ -28,7 +28,7 @@
           </div> -->
           <div class="form-table-box">
               <el-table :data="tableData" :default-sort = "{prop: 'date', order: 'descending'}" style="width: 100%" border stripe>
-                <el-table-column align="center" label="申请时间" >
+                <el-table-column width="170" align="center" label="申请时间" >
                   <template slot-scope="scope">
                     <span class="username_one">
                       {{tableData[scope.$index].add_localtime}}
@@ -49,6 +49,19 @@
                   <template slot-scope="scope">
                     <span class="username_one">
                       {{tableData[scope.$index].state_text}}
+                    </span>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" label="地区" >
+                  <template slot-scope="scope">
+                    <span class="username_one">
+                      <el-tooltip placement="left">
+        								<div slot="content">
+        								  {{tableData[scope.$index].mobile_country_e}} - {{tableData[scope.$index].mobile_country}}   +{{tableData[scope.$index].mobile_code}}
+        								</div>
+        								<div>{{tableData[scope.$index].mobile_country_e}} - {{tableData[scope.$index].mobile_country}}   +{{tableData[scope.$index].mobile_code}}</div>
+        							</el-tooltip>
+
                     </span>
                   </template>
                 </el-table-column>

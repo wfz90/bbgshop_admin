@@ -32,7 +32,7 @@
                   </el-form-item>
               </el-form>
           </div>
-          <div class="filter-box" style="float:right;text-align:right">
+          <!-- <div class="filter-box" style="float:right;text-align:right">
             <el-button v-if="ratechange" type="info" plain>当前佣金返还率
              <span style="color:#ff4444;font-weight:bold;font-size:18px;">{{localrate}}</span>
              %</el-button>
@@ -48,7 +48,7 @@
              <el-button v-if="ratechange && rateprice" type="info" plain @click="changeopen">修改</el-button>
              <el-button v-if="!ratechange && !rateprice" type="info" plain @click="canelrate">取消</el-button>
              <el-button v-if="!ratechange && !rateprice" type="danger" @click="changerate">完成</el-button>
-          </div>
+          </div> -->
           <div class="form-table-box">
               <el-table :data="tableData" :default-sort = "{prop: 'date', order: 'descending'}" style="width: 100%" border stripe>
                 <el-table-column width="175" align="center" label="加入时间" >
@@ -124,7 +124,7 @@
 </template>
 
 <script>
-import { Toast } from 'Vant'
+import { Toast } from 'vant'
 export default {
   name:"DistributionUser",
   data() {

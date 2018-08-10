@@ -132,9 +132,8 @@
 </template>
 
 <script>
-import { Toast } from 'Vant'
+import { Toast } from 'vant'
 export default {
-  name:"DistributionDetail",
   data() {
      return {
        // distriLiveValue: '',

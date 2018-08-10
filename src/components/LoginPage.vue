@@ -1,7 +1,7 @@
 <template>
 <div class="login">
   <div class="logo_box">
-    <img class="logo_box_img" src="static/images/indexlogo.png" />
+    <img class="logo_box_img" src="static/images/indexlogo.png" v-if="CorporateName == 'yt' || CorporateName == 'bbg'"/>
     <div class="bottom_border"></div>
   </div>
   <div class="login-bigbox">
@@ -67,8 +67,10 @@
 
       </div> -->
       <div class="box_body">
-        <!-- <p class="tips">欢迎使用<span style="color:#ff4444;padding:0 5px;font-size:20px;">易天商城吊桥路店</span>后台管理</p> -->
-        <p class="tips">欢迎使用<span style="color:#ff4444;padding:0 5px;font-size:20px;">贝堡商城</span>后台管理</p>
+        <p class="tips" v-if="CorporateName == 'yt'">欢迎使用<span style="color:#ff4444;padding:0 5px;font-size:20px;"> 易天商城吊桥路店 </span>后台管理</p>
+        <p class="tips" v-if="CorporateName == 'bbg'">欢迎使用<span style="color:#ff4444;padding:0 5px;font-size:20px;"> 贝堡商城 </span>后台管理</p>
+        <p class="tips" v-if="CorporateName == 'dw'">欢迎使用<span style="color:#ff4444;padding:0 5px;font-size:20px;"> 德威商城·乐家家国际超市 </span>后台管理</p>
+
         <el-form ref="form" :model="form" :rules="rules" label-position="top">
           <el-form-item label="" prop="username">
             <el-input v-model="form.username" placeholder="用户名"></el-input>
@@ -98,32 +100,33 @@
         </el-form>
       </div>
     </div>
-    <!-- <div class="text_tips">
-      注：非内部人员不得登录,否则将追究其法律责任 ！
-    </div> -->
     <div class="text_tips">
-      注：github版本没有人机验证逻辑，有需要请访问<a href="https://www.vaptcha.com/" target="_Blank">手势验证码</a>，取消LoginPage.vue第215行的注释，进行部署 ！
+      注：非内部人员不得登录,否则将追究其法律责任 ！
     </div>
   </div>
   <!-- <div class="footer"> -->
-    <div class="footertop">
-      <ul >
-        <li class="border_right"><a href="http://www.bbgshop.com/" target="_Blank">贝堡科技</a></li>
-        <li class="border_right"><a href="http://www.bbgshop.com/Goods" target="_Blank">产品介绍</a></li>
-        <li class="border_right"><a href="http://www.bbgshop.com/Parnter" target="_Blank">合作伙伴</a></li>
-        <li class="border_right"><a href="http://www.bbgshop.com/About" target="_Blank">关于我们</a></li>
-        <li><a href="http://www.bbgshop.com/Contact" target="_Blank">联系我们</a></li>
-      </ul>
-    <div class="footerbottom">
-      Copyright © 2018 bbgshop.com All rights reserved.
-    </div>
-    <div class="footerbottom">
-      贝堡网络科技提供技术支持
-    </div>
-    <div class="footerbottompc">
-      Copyright © 2018 bbgshop.com All rights reserved.  贝堡网络科技提供技术支持
-    </div>
+    <div class="footertop" v-if="CorporateName == 'dw'">
+    <div class="footerbottom">贝堡网络科技提供技术支持</div>
+    <div class="footerbottompc">贝堡网络科技提供技术支持</div>
   </div>
+  <div class="footertop" v-if="CorporateName == 'yt' || CorporateName == 'bbg'">
+    <ul >
+      <li class="border_right"><a href="http://www.bbgshop.com/" target="_Blank">贝堡科技</a></li>
+      <li class="border_right"><a href="http://www.bbgshop.com/Goods" target="_Blank">产品介绍</a></li>
+      <li class="border_right"><a href="http://www.bbgshop.com/Parnter" target="_Blank">合作伙伴</a></li>
+      <li class="border_right"><a href="http://www.bbgshop.com/About" target="_Blank">关于我们</a></li>
+      <li><a href="http://www.bbgshop.com/Contact" target="_Blank">联系我们</a></li>
+    </ul>
+  <div class="footerbottom">
+    Copyright © 2018 bbgshop.com All rights reserved.
+  </div>
+  <div class="footerbottom">
+    贝堡网络科技提供技术支持
+  </div>
+  <div class="footerbottompc">
+    Copyright © 2018 bbgshop.com All rights reserved.  贝堡网络科技提供技术支持
+  </div>
+</div>
 
   <!-- </div> -->
 </div>
@@ -132,7 +135,7 @@
 <!-- <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script> -->
 <!-- <script type="text/javascript" src="https://cdn.vaptcha.com/v.js"></script> -->
 <script>
-// import api from '@/config/api';
+import api from '@/config/api';
 export default {
   data() {
     return {
@@ -162,12 +165,15 @@ export default {
         ],
       },
       loading: false,
+      CorporateName: '',
 
     }
   },
   components: {},
   mounted() {
     var that = this
+    // console.log(api.CorporateName);
+    this.CorporateName = api.CorporateName
     // console.log(that.vaptcha);
     this.axios.get('auth/getVaptcha').then((res) => {
       console.log(res);
@@ -213,7 +219,8 @@ export default {
     startLogin() {
       if (!this.form.token) {
         this.$message.error('请进行人机验证！');
-        // return false;
+        // alert('请进行人机验证');
+        return false;
       }
       this.$refs['form'].validate((valid) => {
         if (!valid) {

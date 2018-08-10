@@ -199,7 +199,7 @@
           <el-input type="number" :min="1" v-model="infoForm.cost_price" placeholder="设置成本价"></el-input>
           <div class="form-tips">
             此价格为该商品的<span style="color:#ff6f00;">成本价格，不参与前台计算，仅存储</span> ，
-            <span style="color:#ff6666;">默认为价格值的 0.88 倍</span>
+            <span style="color:#ff6666;">默认为 0 </span>
           </div>
         </el-form-item>
         <el-form-item label="库存">
@@ -208,7 +208,6 @@
             此库存为显示在商品列表中的库存，<span style="color:#ff6666;">默认为规格种类的库存累计值</span>
           </div>
         </el-form-item>
-
         <el-form-item label="运费">
           <el-radio-group v-model="infoForm.freight_type" @change='fright_model_changed'>
             <el-radio :label="0">统一运费</el-radio>
@@ -233,7 +232,32 @@
               用户下单时会<span style="color:#ff6666;"> 按此模板计算运费 </span>
             </div>
           </div>
-
+        </el-form-item>
+        <el-form-item label="供货商">
+          <!-- <el-input type="number" :min="0" v-model="infoForm.num" placeholder="设置积分"></el-input> -->
+          <el-select v-model="infoForm.supplier_id" placeholder="请选择供货商" @change='supplier_select_changed'>
+            <el-option
+              v-for="item in supplier_list"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+          <div class="form-tips">
+            此商品的<span style="color:#ff6666;"> 供货商 </span>
+          </div>
+        </el-form-item>
+        <!-- <el-form-item label="积分">
+          <el-input type="number" :min="0" v-model="infoForm.num" placeholder="设置积分"></el-input>
+          <div class="form-tips">
+            用户购买后可获得的积分，<span style="color:#ff6666;">默认为规格种类的库存累计值</span>
+          </div>
+        </el-form-item> -->
+        <el-form-item label="是否需要身份信息">
+          <el-switch on-text="" off-text="" v-model="infoForm.Identity"></el-switch>
+          <div class="form-tips">
+            <span style="color:#ff6666;"> 需要身份信息的商品在下单时需要用户填写身份证信息 </span>
+          </div>
         </el-form-item>
         <el-form-item label="上架">
           <el-switch on-text="" off-text="" v-model="infoForm.sale"></el-switch>
@@ -279,6 +303,7 @@ export default {
   data() {
     return {
       goodsId: 0,
+      supplier_list: [],//供货商列表
       // fright_model: 0,//运费的默认选项
       fright_model_select: '',//运费模板下拉列表的绑定值
       fright_templete: [],//运费模板列表
@@ -325,6 +350,9 @@ export default {
         cost_price: 0.00,
         freight_type: 0,
         short_order: 0,
+        supplier_id: '',//供货商id
+        supplier_name: '',//供货商名称
+        Identity: 0,//是否需要身份信息
       },
       quillUpdateImg: false, // 根据图片上传状态来确定是否显示loading动画，刚开始是false,不显示
       //富文本配置
@@ -378,9 +406,27 @@ export default {
       this.getGoodsInfo()
     }
     this.gettoken();
+    this.getsupplier();
     this.findGoodsClassifyFirst()
   },
   methods: {
+    getsupplier() {
+      this.axios.post('goodsUpdate/getsupplier').then(res => {
+        console.log(res);
+        this.supplier_list = res.data.data
+        // this.fright_templete = res.data.data
+      })
+    },
+    //供货商下拉列表项改变
+    supplier_select_changed(e){
+      for (var i = 0; i < this.supplier_list.length; i++) {
+        if (this.supplier_list[i].id == e) {
+          this.infoForm.supplier_name = this.supplier_list[i].name
+          this.infoForm.supplier_id = this.supplier_list[i].id
+        }
+      }
+      console.log(this.infoForm);
+    },
     //运费模板项改变
     fright_model_select_changed(e) {
       // this.infoForm.freight_template = e
@@ -419,6 +465,10 @@ export default {
       }
       if (this.infoForm.freight_type == 1 &&( this.infoForm.freight_template == '' || Number(this.infoForm.freight_template == 0))) {
         this.$message.error("运费设置有误 ！")
+        return false
+      }
+      if (this.infoForm.supplier_id == '' || parseInt(this.infoForm.supplier_id) == 0 || this.infoForm.supplier_name == '') {
+        this.$message.error("请选择供货商 ！")
         return false
       }
       if (Number(this.infoForm.short_order) < 0) {
@@ -523,7 +573,7 @@ export default {
     },
     changePrices() {
       this.infoForm.extraPrice = (parseInt(this.infoForm.price) * 1.22).toFixed(2)
-      this.infoForm.cost_price = (parseInt(this.infoForm.price) * 0.88).toFixed(2)
+      // this.infoForm.cost_price = (parseInt(this.infoForm.price) * 0.88).toFixed(2)
     },
     InputPrice(index,row) {
       var minprice = this.tableData[0].price
@@ -944,11 +994,15 @@ export default {
         this.infoForm.sale = res.data.data.goodsInfo.is_on_sale == 1 ? true : false
         this.infoForm.hot = res.data.data.goodsInfo.is_hot == 1 ? true : false
         this.infoForm.new = res.data.data.goodsInfo.is_new == 1 ? true : false
+        this.infoForm.Identity = res.data.data.goodsInfo.Identity == 1 ? true : false
         this.infoForm.main_img = res.data.data.goodsInfo.list_pic_url
         this.unresoldLoopImg = res.data.data.goodsInfo.loop_img
         this.FirstClassifyId = res.data.data.firstClassify.id
         this.SecondClassifyId = res.data.data.secondClassify.id
         this.infoForm.desc = res.data.data.goodsInfo.goods_desc
+        // this.supplier_list = res.data.data.supplier_list
+        this.infoForm.supplier_id = res.data.data.goodsInfo.supplier_id,//供货商id
+        this.infoForm.supplier_name = res.data.data.goodsInfo.supplier_name,//供货商名称
         // console.log(this.infoForm.loop_img);
         this.img_reload()
         this.getgoodsSku()

@@ -24,18 +24,6 @@
       </el-form>
     </div>
     <div class="filter-box" style="float:right;">
-      <!-- <el-switch
-      v-model="new_is_open"
-      @change="new_is_open_change">
-      </el-switch>
-      <el-switch
-      v-model="hot_is_open"
-      @change="hot_is_open_change">
-      </el-switch>
-      <el-switch
-      v-model="sale_is_open"
-      @change="sale_is_open_change">
-      </el-switch> -->
       <el-select @change="FirstClassifyChange" v-model="FirstClassifyId" @clear="FirstClassifyClear" clearable placeholder="请选择一级分类">
         <el-option v-for="item in FirstClassifyList" :key="item.id" :label="item.name" :value="item.id">
         </el-option>
@@ -64,6 +52,11 @@
                 v-model="tableData[scope.$index].name">
               </el-input>
             </div>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label='添加时间' width="170">
+          <template slot-scope="scope">
+            {{row[scope.$index].add_localtime}}
           </template>
         </el-table-column>
         <el-table-column align="center" label="成本价" width="100">
@@ -97,7 +90,7 @@
             placeholder="请输入成本价"></el-input>
           </template>
         </el-table-column>
-        <el-table-column prop="" label="权重" align="center" width="70">
+        <el-table-column prop="" label="权重" align="center" width="100">
           <template slot-scope="scope">
             <div class="" v-if="!row[scope.$index].short_order_edit">
               {{tableData[scope.$index].short_order}}
@@ -507,6 +500,7 @@ export default {
           // array[i]
           let obj = {}
           obj.id = this.tableData[i].id
+          obj.add_localtime = this.timestampToTime(this.tableData[i].add_time)
           obj.is_hot = this.tableData[i].is_hot == 1 ? true : false
           obj.is_new = this.tableData[i].is_new == 1 ? true : false
           obj.is_on_sale = this.tableData[i].is_on_sale == 1 ? true : false
@@ -523,6 +517,16 @@ export default {
         this.page = res.data.data.currentPage
         this.total = res.data.data.count
       })
+    },
+    timestampToTime(timestamp) {
+        var date = new Date(timestamp * 1);
+        var Y = date.getFullYear() + '/';
+        var M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '/';
+        var D = (date.getDate() < 10 ? '0'+date.getDate() : date.getDate()) + '  ';
+        var h = (date.getHours() < 10 ? '0'+date.getHours() : date.getHours()) + ':';
+        var m = (date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes()) + ':';
+        var s = (date.getSeconds() < 10 ? '0'+date.getSeconds() : date.getSeconds());
+        return Y+M+D+h+m+s;
     },
   },
   components: {

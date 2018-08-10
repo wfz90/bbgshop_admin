@@ -93,7 +93,7 @@
 
 <script>
 import echarts from 'echarts'
-import { Toast } from 'Vant'
+import { Toast } from 'vant'
 export default {
   data() {
     return {

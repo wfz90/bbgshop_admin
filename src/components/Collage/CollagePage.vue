@@ -32,7 +32,14 @@
             <el-table-column label="商品名称">
               <template slot-scope="scope">
                 <div class="goodsnamehh">
-                  {{tableData[scope.$index].goods_name }}
+                  {{tableData[scope.$index].goods_name}}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="拼团链接">
+              <template slot-scope="scope">
+                <div class="goodsnamehh">
+                  pages/goods/goods?id={{tableData[scope.$index].goodsid}}
                 </div>
               </template>
             </el-table-column>

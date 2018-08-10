@@ -1,7 +1,9 @@
 <template>
     <div class="left-box">
         <div class="logo">
-            <img src="static/images/logo.png"/>
+            <img v-if="CorporateName == 'yt'" style="height:50px;" src="static/images/yitian_logo.png"/>
+            <img v-if="CorporateName == 'bbg'" style="height:50px;" src="static/images/beibao_logo.png"/>
+            <img v-if="CorporateName == 'dw'" src="static/images/dewei_logo.png"/>
         </div>
         <el-menu class="sidebar" :unique-opened="true" :default-active="currentPagePath" @open="handleOpen"
                  :router="true" theme="dark" @close="handleClose">
@@ -30,6 +32,10 @@
                     <i class="fa fa-circle"></i>
                     <span>商品分类</span>
                 </el-menu-item>
+                <el-menu-item index="/dashboard/SupplierPage">
+                    <i class="fa fa-circle"></i>
+                    <span>供货商管理</span>
+                </el-menu-item>
                 <!-- <el-menu-item index="/dashboard/brand">
                     <i class="fa fa-circle"></i>
                     <span>品牌管理</span>
@@ -40,6 +46,10 @@
                   <i class="fa fa-group"></i>
                   <span>分销管理</span>
               </template>
+              <el-menu-item index="/dashboard/DistributionConfig">
+                  <i class="fa fa-circle"></i>
+                  <span>分销设置</span>
+              </el-menu-item>
               <el-menu-item index="/dashboard/Distribution_apply">
                   <i class="fa fa-circle"></i>
                   <span>分销申请</span>
@@ -67,6 +77,10 @@
                     <i class="fa fa-product-hunt"></i>
                     <span>店铺管理</span>
                 </template>
+                <el-menu-item index="/dashboard/KeywordSetting">
+                    <i class="fa fa-circle"></i>
+                    <span>关键词设置</span>
+                </el-menu-item>
                 <el-menu-item index="/dashboard/loopindex">
                     <i class="fa fa-circle"></i>
                     <span>首页轮播</span>
@@ -75,43 +89,15 @@
                     <i class="fa fa-circle"></i>
                     <span>运费模板</span>
                 </el-menu-item>
-                <el-menu-item index="/dashboard/GoodsQuestionPage">
+                <el-menu-item index="/dashboard/CartRulesPage">
+                    <i class="fa fa-circle"></i>
+                    <span>金额结算规则</span>
+                </el-menu-item>
+                <el-menu-item index="/dashboard/GoodsQuestionUpdate">
                     <i class="fa fa-circle"></i>
                     <span>商品页常见问题管理</span>
                 </el-menu-item>
             </el-submenu>
-            <!-- <el-submenu index="/dashboard/order/all">
-                <template slot="title">
-                    <i class="fa fa-large fa-archive"></i>
-                    <span>订单中心</span>
-                </template>
-            </el-submenu> -->
-            <!-- <el-submenu index="order">
-                <template slot="title">
-                    <i class="fa fa-large fa-archive"></i>
-                    <span>订单中心</span>
-                </template>
-                <el-menu-item index="/dashboard/pendpayorder">
-                    <i class="fa fa-circle"></i>
-                    <span>待付款订单</span>
-                </el-menu-item>
-                <el-menu-item index="/dashboard/pendoutorder">
-                    <i class="fa fa-circle"></i>
-                    <span>待发货订单</span>
-                </el-menu-item>
-                <el-menu-item index="/dashboard/alreadyoutorder">
-                    <i class="fa fa-circle"></i>
-                    <span>待收货订单</span>
-                </el-menu-item>
-                <el-menu-item index="/dashboard/refundorder">
-                    <i class="fa fa-circle"></i>
-                    <span>退款订单</span>
-                </el-menu-item>
-                <el-menu-item index="/dashboard/order">
-                    <i class="fa fa-circle"></i>
-                    <span>所有订单</span>
-                </el-menu-item>
-            </el-submenu> -->
             <el-submenu index="operate">
                 <template slot="title">
                     <i class="fa fa-large fa-truck"></i>
@@ -133,22 +119,7 @@
                     <i class="fa fa-circle"></i>
                     <span>抽奖管理</span>
                 </el-menu-item>
-
-                <!-- <el-menu-item index="/dashboard/operate/topic">
-                    <i class="fa fa-circle"></i>
-                    <span>专题管理</span>
-                </el-menu-item> -->
             </el-submenu>
-            <!--<el-submenu index="total">-->
-                <!--<template slot="title">-->
-                    <!--<i class="fa fa-large fa-line-chart"></i>-->
-                    <!--<span>数据统计</span>-->
-                <!--</template>-->
-                <!--<el-menu-item index="/dashboard/total">-->
-                    <!--<i class="fa fa-circle"></i>-->
-                    <!--<span>订单列表</span>-->
-                <!--</el-menu-item>-->
-            <!--</el-submenu>-->
             <el-submenu index="user">
                 <template slot="title">
                     <i class="fa fa-large fa-user-circle"></i>
@@ -163,35 +134,33 @@
                     <span>用户反馈</span>
                 </el-menu-item>
             </el-submenu>
-            <!--<el-submenu index="setting">-->
-                <!--<template slot="title">-->
-                    <!--<i class="fa fa-large fa-wrench"></i>-->
-                    <!--<span>店铺设置</span>-->
-                <!--</template>-->
-                <!--<el-menu-item index="/dashboard/setting">-->
-                    <!--<i class="fa fa-circle"></i>-->
-                    <!--<span>店铺信息</span>-->
-                <!--</el-menu-item>-->
-                <!--<el-menu-item index="/dashboard/setting/s">-->
-                    <!--<i class="fa fa-circle"></i>-->
-                    <!--<span>微信设置</span>-->
-                <!--</el-menu-item>-->
-                <!--<el-menu-item index="/dashboard/setting/a">-->
-                    <!--<i class="fa fa-circle"></i>-->
-                    <!--<span>首页设置</span>-->
-                <!--</el-menu-item>-->
-            <!--</el-submenu>-->
+            <el-submenu index="setting">
+                <template slot="title">
+                    <i class="fa fa-large fa-file-text-o"></i>
+                    <span>文章管理</span>
+                </template>
+                <el-menu-item index="/dashboard/NoviceGuide">
+                    <i class="fa fa-circle"></i>
+                    <span>新手指南</span>
+                </el-menu-item>
+                <el-menu-item index="/dashboard/AftersaleGuide">
+                    <i class="fa fa-circle"></i>
+                    <span>售后指南</span>
+                </el-menu-item>
+            </el-submenu>
         </el-menu>
     </div>
 </template>
 
 <script>
+import api from '@/config/api';
 // import { Menu,Submenu,MenuItem,MenuItemGroup } from 'element-ui'
 // Vue.use(Menu)
     export default {
         data() {
             return {
-                currentPagePath: '/dashboard'
+              CorporateName: '',
+              currentPagePath: '/dashboard'
             }
         },
         // components:{
@@ -208,7 +177,8 @@
             }
         },
         mounted() {
-            console.log(this.$route.path);
+          this.CorporateName = api.CorporateName
+          console.log(this.$route.path);
         }
     }
 
@@ -253,6 +223,7 @@
     }
 
     .left-box .logo img {
-        height: 40px;
+        /* border:1px solid black; */
+        height: 60px;
     }
 </style>

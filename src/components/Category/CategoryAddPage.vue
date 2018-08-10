@@ -51,13 +51,24 @@
                     </el-form-item>
                     <el-form-item label="图标排序"  v-if="is_showindex == true">
                         <el-input-number v-model="goodsmallsort_order" :min="1" :max="10"></el-input-number>
-                        <div class="form-tip">最大为10，会覆盖排序为当前值的内容</div>
+                        <div class="form-tip">最大为10，<span style="color:#ff6666;"> 会覆盖排序为当前值的内容 ！！！
+                          <span style="color:#ff6f00;"> 务必注意，划重点 ！！！</span></span></div>
                     </el-form-item>
-
-                    <el-form-item label="分类图片" prop="wap_banner_url">
-                      <!-- :action="WapBannerPic"  :with-credentials='true'-->
+                    <el-form-item label="首页大分类图片" prop="wap_index_url" v-if="showcatrey">
                       <el-upload
-
+                        class="avatar-uploader"
+                        action="http://upload.qiniup.com"
+                        :show-file-list="false"
+                        :data="uploadToken"
+                        :on-success="handleIndexImgSuccess">
+                        <img v-if="infoForm.banner_url" :src="infoForm.banner_url" class="avatar">
+                        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                      </el-upload>
+                        <div class="form-tip">图片尺寸：400*300，
+                          <span style="color:#ff6666;"> 显示在首页，每一个大分类之前 </span></div>
+                    </el-form-item>
+                    <el-form-item label="分类页图片" prop="wap_banner_url">
+                      <el-upload
                         action="http://upload.qiniup.com"
                         list-type="picture-card"
                         :data="uploadToken"
@@ -66,13 +77,9 @@
                         :file-list = "GoodsMainImg">
                         <i class="el-icon-plus"></i>
                       </el-upload>
-                        <!-- <el-upload class="image-uploader" name="wap_banner_pic"
-                                   action="http://127.0.0.1:8360/admin/upload/categoryWapBannerPic" :show-file-list="false"
-                                   :on-success="handleUploadImageSuccess" :headers="uploaderHeader">
-                            <img v-if="infoForm.wap_banner_url" :src="infoForm.wap_banner_url" class="image-show">
-                            <i v-else class="el-icon-plus image-uploader-icon"></i>
-                        </el-upload> -->
-                        <div class="form-tip">图片尺寸：顶级分类为750*246 && 二级分类为250*250 && 请不要上传超过两张！！</div>
+                        <div class="form-tip">图片尺寸：顶级分类为750*300，
+                          <span style="color:#ff6666;"> 显示在分类页右上角 </span>
+                           && 二级分类为250*250， <span style="color:#ff6666;"> 显示在分类页二级分类位置 </span> && 请不要上传超过两张！！</div>
                     </el-form-item>
                     <el-form-item label="排序">
                         <el-input-number v-model="infoForm.sort_order" :min="1" :max="1000"></el-input-number>
@@ -99,6 +106,7 @@
         uploadToken:{
           token: "",
         },
+        // indeximageUrl: '',
         // WapBannerPic: '',
         // IndexBarPic: '',
         Goodsmallparentid: 0,
@@ -129,6 +137,7 @@
           front_name: '',
           sort_order: 100,
           is_show: true,
+          banner_url: '',
         },
         infoRules: {
           name: [
@@ -152,18 +161,6 @@
       // console.log(api.api.indexbaricon);
       // console.log(this.$store.state.strict);
     },
-    watch:{
-      // is_showindex(a,b){
-      //   console.log(a,b);
-      //   if ( a == true) {
-      //     //打开主页显示
-      //     this.showsmall()
-      //
-      //     // console.log("987987987");
-      //
-      //   }
-      // }
-    },
     methods: {
       gettoken(){
         // console.log("12163546498764131");
@@ -172,6 +169,14 @@
           this.uploadToken.token = res.data.data.uploadToken
         })
       },
+      //显示在首页的分类大图标
+      handleIndexImgSuccess(res, file) {
+        console.log(res,file);
+        this.infoForm.banner_url = 'http://resource.bbgshop.com/'+ res.key
+
+      },
+
+
       showsmall(){
         // console.log(this.infoForm.id);
         this.axios.post('category/findsmallloop', {
@@ -189,42 +194,11 @@
             let objj = {}
             let url = {}
             objj.url = info.icon_url
-            // console.log(objj);
             this.GoodsSmallImg.push(objj)
-            // var url = info.url
-            // var value = info.category_id;
-            // console.log(value);
             this.Goodsmallparentid = info.category_id
           }
           // console.log("99999999999999999999999999999999999");
           console.log(this.GoodsSmallImg[0]);
-          // if ( typeof(res.data.data.sort_order) == 'undefined') {
-          //   console.log("不存在主页");
-          // //   // console.log("12345689");
-          // //   // this.smallinfo = res.data.data
-          //   this.is_showindex = false
-          // }else{
-          //   this.is_showindex = true
-          //   console.log("存在主页");
-          //   var info = res.data.data
-          //   this.goodsmallsort_order = info.sort_order
-          //   console.log(this.is_showindex);
-          //   // this.Goodsmallparentid = info.sort_order
-          // //   this.smallinfo.sort_order = info.sort_order
-          // //   this.smallinfo.name = info.name
-          //   let obj = {}
-          //   let url = {}
-          //   obj.url = info.icon_url
-          //   this.GoodsSmallImg.push(obj)
-          //   var url = info.url
-          //   var value = url.replace(/[^0-9]/ig,"");
-          //   console.log(value);
-          //   this.Goodsmallparentid = value
-          //   // this.smallinfo.parent_id = info
-          // }
-          // console.log(this.GoodsSmallImg);
-
-          // console.log(this.smallinfo);
         })
       },
       postsmall(){
@@ -300,8 +274,6 @@
         console.log(this.categoryIs_show);
         console.log(this.GoodsMainImg);
         if (this.infoForm.id <= 0) {
-
-
           this.axios.post('category/addstoreall',{
             categoryName:this.categoryName,
             categoryParent_id:this.categoryParent_id,
@@ -309,7 +281,7 @@
             categorySort_order:this.categorySort_order,
             categoryIs_show:this.categoryIs_show ? 1 : 0,
             GoodsMainImg:this.GoodsMainImg,
-
+            banner_url: this.infoForm.banner_url
           }).then((res) => {
             console.log(res);
               this.$message({
@@ -338,7 +310,7 @@
             categorySort_order:this.categorySort_order,
             categoryIs_show:this.categoryIs_show ? 1 : 0,
             GoodsMainImg:this.GoodsMainImg,
-
+            banner_url: this.infoForm.banner_url
           }).then((res) => {
             console.log(res);
 
@@ -409,33 +381,52 @@
 </script>
 
 <style>
-    .image-uploader{
-        height: 105px;
-    }
-    .image-uploader .el-upload {
-        border: 1px solid #d9d9d9;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .image-uploader .el-upload:hover {
-        border-color: #20a0ff;
-    }
-
-    .image-uploader .image-uploader-icon {
-        font-size: 28px;
-        color: #8c939d;
-        min-width: 105px;
-        height: 105px;
-        line-height: 105px;
-        text-align: center;
-    }
-
-    .image-uploader .image-show {
-        min-width: 105px;
-        height: 105px;
-        display: block;
-    }
-
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #20a0ff;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 200px;
+  height: 150px;
+  line-height: 150px;
+  text-align: center;
+}
+.avatar {
+  width: 200px;
+  height: 150px;
+  display: block;
+}
+.image-uploader{
+  height: 105px;
+}
+.image-uploader .el-upload {
+  border: 1px solid #d9d9d9;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.image-uploader .el-upload:hover {
+  border-color: #20a0ff;
+}
+.image-uploader .image-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  min-width: 105px;
+  height: 105px;
+  line-height: 105px;
+  text-align: center;
+}
+.image-uploader .image-show {
+  min-width: 105px;
+  height: 105px;
+  display: block;
+}
 </style>

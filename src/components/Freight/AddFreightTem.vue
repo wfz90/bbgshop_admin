@@ -20,7 +20,7 @@
           <el-form-item label="计费方式" >
             <el-radio-group v-model="Freight.Billing_Method" @change="BillingMethodChanged">
               <el-radio :label="0">按件数</el-radio>
-              <el-radio :label="1">按重量</el-radio>
+              <el-radio :label="1" disabled>按重量</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="配送区域" >
@@ -31,7 +31,6 @@
                     <div slot="content">
                       <el-button type="primary" size="small" @click="editAdressTemplate_count(scope.$index)">编辑</el-button>
                       <el-button type="danger" size="small" @click="delAdressTemplate(scope.$index)">删除</el-button>
-
                     </div>
                     <div class="">
                       {{tableData[scope.$index].temp_point_city_name}}

@@ -7,14 +7,21 @@
 				<el-breadcrumb-item>商品分类</el-breadcrumb-item>
 			</el-breadcrumb>
 			<div class="operation-nav">
-				<router-link to="/dashboard/category/add">
+				<router-link to="/dashboard/CategoryUpdatePage">
 					<el-button type="primary" icon="plus">添加分类</el-button>
 				</router-link>
 			</div>
 		</div>
 		<div class="content-main">
 			<div class="form-table-box">
-				<el-table :data="tableData" style="width: 100%" border stripe>
+				<el-tree
+				  :data="treeData"
+				  :props="defaultProps"
+					node-key="id"
+				  accordion
+					:render-content="renderContent">
+				</el-tree>
+				<!-- <el-table :data="tableData" style="width: 100%" border stripe>
 					<el-table-column prop="name" label="分类名称">
 						<template slot-scope="scope">
 							{{ scope.row.level == 2 ? '　' : '' }} {{scope.row.name}}
@@ -33,7 +40,7 @@
 							<el-button size="small" type="danger" @click="handleRowDelete(scope.$index, scope.row)">删除</el-button>
 						</template>
 					</el-table-column>
-				</el-table>
+				</el-table> -->
 			</div>
 		</div>
 	</div>
@@ -49,10 +56,29 @@
         filterForm: {
           name: ''
         },
+				defaultProps: {
+					children: 'children',
+					label: 'label',
+				},
+				treeData: [],
         tableData: []
       }
     },
     methods: {
+			renderContent(h, { node, data, store }) {
+        return (
+          <span>
+            <span>
+							<span style="font-size:14px;">{node.label}</span>
+							<span style="font-size:10px;color:#757575;padding-left:15px;">Order_{data.sort_order}</span>
+              <span style="font-size:10px;color:#757575;padding-left:15px;">{data.is_show == 0 ? '未启用' : '已启用'}</span>
+            </span>
+            <span style="float: right; margin-right: 20px">
+              <el-button size="small" on-click={ () => this.handleRowEdit(store, data) }>编辑</el-button>
+              <el-button size="small" type="danger" on-click={ () => this.handleRowDelete(store, data) }>删除</el-button>
+            </span>
+          </span>);
+      },
       handlePageChange(val) {
         this.page = val;
         //保存到localStorage
@@ -60,29 +86,32 @@
         localStorage.setItem('brandFilterForm', JSON.stringify(this.filterForm));
         this.getList()
       },
-      handleRowEdit(index, row) {
-        this.$router.push({ name: 'category_add', query: { id: row.id } })
+      handleRowEdit(store, data) {
+        this.$router.push({ name: 'CategoryUpdatePage', query: { id: data.id } })
       },
-      handleRowDelete(index, row) {
-
+      handleRowDelete(store, data) {
         this.$confirm('确定要删除?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-
-          this.axios.post('category/destory', { id: row.id }).then((response) => {
+          this.axios.post('category/destory', { id: data.id }).then((response) => {
             console.log(response.data)
             if (response.data.errno === 0) {
               this.$message({
                 type: 'success',
-                message: '删除成功!'
+                message: '删除成功 !'
               });
-
-              this.getList();
+							store.remove(data);
+              // this.getList();
             }
           })
-        });
+        }).catch(() => {
+					this.$message({
+						type: 'info',
+						message: '取消删除 !'
+					});
+				});
       },
       onSubmitFilter() {
         this.page = 1
@@ -97,8 +126,36 @@
         }).then((response) => {
 					console.log(response);
           this.tableData = response.data.data
+					this.datareload()
         })
-      }
+      },
+			datareload() {
+				for (var i = 0; i < this.tableData.length; i++) {
+					if (this.tableData[i].parent_id == 0) {
+						// console.log(this.tableData[i].name);
+						let obj = {}
+						let children = []
+						obj.label = this.tableData[i].name
+						obj.id = this.tableData[i].id
+						obj.sort_order = this.tableData[i].sort_order
+						obj.is_show = this.tableData[i].is_show
+						for (var j = 0; j < this.tableData.length; j++) {
+							let childer = []
+							if (this.tableData[j].parent_id !== 0 && this.tableData[j].parent_id == this.tableData[i].id) {
+								let list = {}
+								list.label = this.tableData[j].name
+								list.id = this.tableData[j].id
+								list.sort_order = this.tableData[j].sort_order
+								list.is_show = this.tableData[j].is_show
+								children.push(list)
+							}
+						}
+						obj.children = children
+						this.treeData.push(obj)
+					}
+				}
+				console.log(this.treeData);
+			},
     },
     components: {
 

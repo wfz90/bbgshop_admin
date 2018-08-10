@@ -26,10 +26,41 @@ export default new Router({
             name: 'dashboard',
             component:resolve => require(['@/components/DashboardPage'],resolve),
             children: [
+
+              {
+                  path: 'AftersaleGuide',
+                  name: 'AftersaleGuide',
+                  component:resolve => require(['@/components/Guide/AftersaleGuide'],resolve),
+
+              },
+              {
+                  path: 'NoviceGuide',
+                  name: 'NoviceGuide',
+                  component:resolve => require(['@/components/Guide/NoviceGuide'],resolve),
+
+              },
+              {
+                  path: 'KeywordSetting',
+                  name: 'KeywordSetting',
+                  component:resolve => require(['@/components/Keywords/KeywordSetting'],resolve),
+
+              },
               {
                   path: 'GoodsUpdatePage',
                   name: 'GoodsUpdatePage',
                   component:resolve => require(['@/components/Goods/GoodsUpdatePage'],resolve),
+
+              },
+              {
+                  path: 'GoodsQuestionUpdate',
+                  name: 'GoodsQuestionUpdate',
+                  component:resolve => require(['@/components/Other/GoodsQuestionUpdate'],resolve),
+
+              },
+              {
+                  path: 'DistributionConfig',
+                  name: 'DistributionConfig',
+                  component:resolve => require(['@/components/Distribution/DistributionConfig'],resolve),
 
               },
               {
@@ -81,10 +112,28 @@ export default new Router({
 
                 },
                 {
-                    path: 'GoodsQuestionPage',
-                    name: 'GoodsQuestionPage',
+                    path: 'SupplierPage',
+                    name: 'SupplierPage',
                     // component: require('@/components/Other/LoopIndexPage')
-                    component:resolve => require(['@/components/Other/GoodsQuestionPage'],resolve),
+                    component:resolve => require(['@/components/Supplier/SupplierPage'],resolve),
+                },
+                {
+                    path: 'CategoryUpdatePage',
+                    name: 'CategoryUpdatePage',
+                    // component: require('@/components/Other/LoopIndexPage')
+                    component:resolve => require(['@/components/Category/CategoryUpdatePage'],resolve),
+                },
+                {
+                    path: 'CartRulesAdd',
+                    name: 'CartRulesAdd',
+                    // component: require('@/components/Other/LoopIndexPage')
+                    component:resolve => require(['@/components/CartRules/CartRulesAdd'],resolve),
+                },
+                {
+                    path: 'CartRulesPage',
+                    name: 'CartRulesPage',
+                    // component: require('@/components/Other/LoopIndexPage')
+                    component:resolve => require(['@/components/CartRules/CartRulesPage'],resolve),
                 },
                 {
                     path: 'FreightTemPage',

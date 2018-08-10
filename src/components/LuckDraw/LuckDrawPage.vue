@@ -40,6 +40,13 @@
                       </div>
                     </template>
                   </el-table-column>
+                  <el-table-column label="抽奖链接">
+                    <template slot-scope="scope">
+                      <div class="goodsnamehh">
+                        pages/luckdraw/luckdraw?id={{tableData[scope.$index].id}}
+                      </div>
+                    </template>
+                  </el-table-column>
                   <el-table-column prop="limit_localtime" align="center" width="170" label="截止时间">
                   </el-table-column>
                   <el-table-column prop="open_localtime" align="center" width="170" label="开奖时间">

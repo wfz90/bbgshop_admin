@@ -6,7 +6,8 @@
                 <el-breadcrumb-item>订单中心</el-breadcrumb-item>
             </el-breadcrumb>
             <div class="operation-nav">
-                <el-button type="primary" size="small"@click="Refresh">刷新</el-button>
+                <el-button type="warning" size="small" @click="ExportExecle">订单导出</el-button>
+                <el-button type="primary" size="small" @click="Refresh">刷新</el-button>
             </div>
             <!-- <div class="operation-nav">
                 <router-link to="/dashboard/order/add">
@@ -46,7 +47,7 @@
               </el-form>
             </div>
             <div class="content_filler_right" >
-              <el-select style="margin-right:10px" v-model="ordertype" clearable placeholder="请选择订单状态" @change="changeorder_type">
+              <el-select style="width:150px;margin-right:10px" v-model="ordertype" clearable placeholder="请选择订单状态" @change="changeorder_type">
                 <el-option
                   v-for="item in typelist"
                   :key="item.id"
@@ -54,7 +55,7 @@
                   :value="item.code">
                 </el-option>
               </el-select>
-              <el-select v-model="orderstate" clearable placeholder="请选择订单类型" @change="changeorder_state">
+              <el-select style="width:150px;margin-right:10px" v-model="orderstate" clearable placeholder="请选择订单类型" @change="changeorder_state">
                 <el-option
                   v-for="item in statelist"
                   :key="item.id"
@@ -62,6 +63,14 @@
                   :value="item.code">
                 </el-option>
               </el-select>
+              <!-- <el-select style="width:150px;" v-model="filterForm.supplier_id" clearable placeholder="请选择供货商" @change="changeorder_supplier">
+                <el-option
+                  v-for="item in supplierlist"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id">
+                </el-option>
+              </el-select> -->
               <el-button type="primary" @click="ClierFilter">清空查询</el-button>
             </div>
           </div>
@@ -97,6 +106,10 @@
                           <div class="tooltip_item">
                              <div class="tooltip_item_left">手机号</div>
                              <div class="tooltip_item_right">{{tableData[scope.$index].user.mobile}}</div>
+                          </div>
+                          <div class="tooltip_item">
+                             <div class="tooltip_item_left">地区</div>
+                             <div class="tooltip_item_right">{{tableData[scope.$index].user.mobile_country_e}} - {{tableData[scope.$index].user.mobile_country}}   +{{tableData[scope.$index].user.mobile_code}}</div>
                           </div>
                           <div class="tooltip_item">
                              <div class="tooltip_item_left">注册时间</div>
@@ -204,9 +217,11 @@
                               tableData[scope.$index].refund.abled == 1 && tableData[scope.$index].refund_is_success === 0 ? '退款撤回' : ''}}</span>
                             <span class="one_row_overflow_refundget">{{ tableData[scope.$index].refund.state == 1001 && tableData[scope.$index].create_refund_localtime !== ' - - ' &&
                               tableData[scope.$index].refund.abled == 0 && tableData[scope.$index].refund_is_success === 0 ? '申请退款' : ''}}</span>
-                            <span class="one_row_overflow_refundno">{{tableData[scope.$index].pay_id == 2 &&
+                            <span class="one_row_overflow_refundno">{{ tableData[scope.$index].order_status == 201 && tableData[scope.$index].pay_id == 2 &&
                               tableData[scope.$index].collage_is_success == 0 && tableData[scope.$index].refund_is_success == 0 ? '拼团中' : ''}}</span>
-                            <span class="one_row_overflow_refundcollage">{{tableData[scope.$index].pay_id == 2 &&
+                              <span class="one_row_overflow_refundno">{{ tableData[scope.$index].order_status == 0 && tableData[scope.$index].pay_id == 2 &&
+                                tableData[scope.$index].collage_is_success == 0 && tableData[scope.$index].refund_is_success == 0 ? '发起拼团' : ''}}</span>
+                            <span class="one_row_overflow_refundcollage">{{ tableData[scope.$index].order_status == 201 && tableData[scope.$index].pay_id == 2 &&
                               tableData[scope.$index].collage_is_success == 1 && tableData[scope.$index].refund_is_success == 0 ? '拼团成功' : ''}}</span>
                           </div>
                         </el-tooltip>
@@ -266,7 +281,7 @@
                             type="info">退款已成功</el-button>
                             <el-button v-if="scope.row.refund.state == 1001 && scope.row.refund.abled == 0" size="small" type="danger" @click="refund(scope.$index, scope.row)">退款</el-button>
                             <el-button size="small" @click="handleRowEdit(scope.$index, scope.row)">查看</el-button>
-                            <el-button size="small" @click="refundSure(scope.$index, scope.row)" v-if="scope.row.pay_id == 2 && scope.row.collage_is_success == 0
+                            <el-button size="small" @click="refundSure(scope.$index, scope.row)" v-if="scope.row.order_status == 201 && scope.row.pay_id == 2 && scope.row.collage_is_success == 0
                             && scope.row.collage_isouttime == 1 && scope.row.refund_is_success == 0" type="info">退款(拼团超时)</el-button>
                             <el-button size="small" disabled v-if="scope.row.pay_id == 2 && scope.row.collage_is_success == 0
                             && scope.row.collage_isouttime == 1 && scope.row.refund_is_success == 1" type="info">拼团超时</el-button>
@@ -280,7 +295,7 @@
                 </el-pagination>
             </div>
         </div>
-        <!-- 修改订单价格 -->
+        <!-- 修改订单价格弹层 -->
         <van-popup v-model="chage_price_popup">
           <div class="ChagePrice_area">
             <div class="ChagePrice_area_title">
@@ -603,17 +618,185 @@
             <!-- </div> -->
           </div>
         </van-popup>
-          <!-- <van-loading style="z-index:9999" color="white" /> -->
+        <!-- //导出表格的弹层 -->
+        <van-popup v-model="export_execle_popup">
+          <div class="export_area">
+            <div class="ChagePrice_area_title">
+              订单列表 <span style="font-size:11px;font-weight:normal;color:#757575;"> (导出Execle表格)</span>
+            </div>
+          </div>
+          <div class="ChagePrice_area_filler">
+            <el-form label-width="100px" :model="export_from">
+              <el-form-item label="" style="margin:10px 15px 10px 0px;float:right">
+                <el-select style="width:150px;" @change="export_supplier_change" v-model="export_from.supplier_id" clearable placeholder="请选择供货商">
+                  <el-option
+                    v-for="item in supplierlist"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="" style="margin:10px 0px 10px 0px;float:left">
+                <div class="block">
+                  <el-date-picker
+                    v-model="Export_limit_day"
+                    type="datetimerange"
+                    placeholder="选择创建订单的时间范围"
+                    align="right"
+                    @change='Export_pickerchange'
+                    >
+                  </el-date-picker>
+                </div>
+              </el-form-item>
+              <!-- <el-form-item label="物流单号">
+                <el-input style="width:230px;" v-model="locgic_form.compycode"></el-input>
+              </el-form-item> -->
+            </el-form>
+          </div>
+          <div class="export_select_supplier_area">
+            <el-table :data="export_order_goods" border style="width: 100%">
+              <el-table-column align="center" label="创建时间" width="170">
+                <template slot-scope="scope">
+                    <div class="one_row_overflow">
+                      {{export_order_goods[scope.$index].add_time}}
+                    </div>
+                </template>
+              </el-table-column>
+              <el-table-column align="center" width="190" label="订单编号" >
+                <template slot-scope="scope">
+                    <div class="one_row_overflow">
+                      {{export_order_goods[scope.$index].order_sn}}
+                    </div>
+                </template>
+              </el-table-column>
+              <el-table-column align="center" label="商品名称" >
+                <template slot-scope="scope">
+                    <div class="one_row_overflow" style="-webkit-line-clamp: 2;">
+                      {{export_order_goods[scope.$index].goods_name}}
+                    </div>
+                </template>
+              </el-table-column>
+              <el-table-column align="center" width="120" prop="supplier_name" label="供货商" >
+              </el-table-column>
+              <el-table-column label="数量" width="70" align="center">
+                <template slot-scope="scope">
+                    <div class="one_row_overflow">
+                      {{export_order_goods[scope.$index].goods_num}}
+                    </div>
+                </template>
+              </el-table-column>
+              <el-table-column label="订单状态" width="120" align="center">
+                <template slot-scope="scope">
+                  <el-tooltip class="item" effect="dark" placement="left">
+                    <div slot="content">
+                    <div class="tooltip_item">
+                       <div class="tooltip_item_left">物流公司</div>
+                       <div class="tooltip_item_right">{{export_order_goods[scope.$index].express_shipper_name}}</div>
+                    </div>
+                    <div class="tooltip_item">
+                       <div class="tooltip_item_left">运单编号</div>
+                       <div class="tooltip_item_right">{{export_order_goods[scope.$index].express_logistic_code}}</div>
+                    </div>
+                    </div>
+                  <div class="one_row_overflow">
+                    {{export_order_goods[scope.$index].order_status}}
+                  </div>
+                </el-tooltip>
+                </template>
+              </el-table-column>
+              <el-table-column align="center" label="属性" width="70" >
+                <template slot-scope="scope">
+                  <el-tooltip class="item" effect="dark" placement="left">
+                    <div slot="content">
+                    <div class="tooltip_item">
+                       <div class="tooltip_item_left">商品属性</div>
+                       <div class="tooltip_item_right">{{export_order_goods[scope.$index].is_Identity}}</div>
+                    </div>
+                    <div class="tooltip_item">
+                       <div class="tooltip_item_left">身份信息</div>
+                       <div class="tooltip_item_right">{{export_order_goods[scope.$index].Identity_Input}}</div>
+                    </div>
+                    </div>
+                  <div class="one_row_overflow">
+                    {{export_order_goods[scope.$index].is_Identity}}
+                  </div>
+                </el-tooltip>
+                </template>
+              </el-table-column>
+              <el-table-column align="center" label="备注" width="70" >
+                <template slot-scope="scope">
+                  <el-tooltip class="item" effect="dark" placement="left">
+                    <div slot="content">
+                    <div class="tooltip_item">
+                       <div class="tooltip_item_left">买家备注</div>
+                       <div class="tooltip_item_right">{{export_order_goods[scope.$index].user_message}}</div>
+                    </div>
+                    <div class="tooltip_item">
+                       <div class="tooltip_item_left">买家备注</div>
+                       <div class="tooltip_item_right">{{export_order_goods[scope.$index].admin_message}}</div>
+                    </div>
+                    </div>
+                  <div class="one_row_overflow">
+                    {{export_order_goods[scope.$index].user_message}}
+                  </div>
+                </el-tooltip>
+                </template>
+              </el-table-column>
+              <el-table-column align="center" label="收货人" width="140" >
+                <template slot-scope="scope">
+                  <el-tooltip class="item" effect="dark" placement="left">
+                    <div slot="content">
+                    <div class="tooltip_item">
+                       <div class="tooltip_item_left">收货人</div>
+                       <div class="tooltip_item_right">{{export_order_goods[scope.$index].consignee}}</div>
+                    </div>
+                    <div class="tooltip_item">
+                       <div class="tooltip_item_left">收货地址</div>
+                       <div class="tooltip_item_right">{{export_order_goods[scope.$index].full_region}}</div>
+                    </div>
+                    <div class="tooltip_item">
+                       <div class="tooltip_item_left">手机号</div>
+                       <div class="tooltip_item_right">{{export_order_goods[scope.$index].mobile}}</div>
+                    </div>
+                    </div>
+                  <div class="one_row_overflow">
+                    {{export_order_goods[scope.$index].consignee}}
+                  </div>
+                </el-tooltip>
+                </template>
+              </el-table-column>
+              <!-- <el-table-column prop="address" label="地址"> -->
+              <!-- </el-table-column> -->
+            </el-table>
+            <div class="page-box">
+              <el-pagination @current-change="handlePageChange_goods" :current-page="export_page"
+              :page-size="10" layout="total, prev, pager, next, jumper" :total="export_total">
+              </el-pagination>
+            </div>
+            <div class="page-box">
+              <el-button style="margin:10px 20px;" type="primary" :disabled="export_abled_button" @click="ExportExecleAction">导出到Excele表格</el-button>
+            </div>
+          </div>
+        </van-popup>
 
     </div>
 </template>
 
 <script>
 import { Toast } from 'vant'
+import FileSaver from 'file-saver'
+import XLSX from 'xlsx'
 // import { Loading } from 'vant';
   export default {
     data() {
       return {
+        export_from: {
+          supplier_id: ''
+        },
+        // order_supplier: '',//供货商的值
+        supplierlist: [],//供货商列表
+        export_execle_popup: false,//导出表格的弹层
         price_reg: true,//确认按钮状态
         changed_price_input: '',//修改的价格
         page: 1,
@@ -660,7 +843,6 @@ import { Toast } from 'vant'
         userInfo: {},
         refundInfo: {},
         refund_img: [],
-
         sendout_logistics_popup: false,
         chage_address_popup: false,
         order_info: {},
@@ -693,6 +875,7 @@ import { Toast } from 'vant'
         filterForm: {
           consignee: '',
           order_sn: '',
+          supplier_id: '',
           // user: '',
         },
         logic_comy: '',
@@ -746,10 +929,111 @@ import { Toast } from 'vant'
             value:"处理中",
             code: 400
           },
-        ]
+        ],
+        export_order_goods: [],
+        export_page: 1,
+        export_total: 0,
+        loading_notify: '',
+        export_abled_button: false,
+        Export_limit_day: [],//订单导出时限制时间的绑定
+        Export_limit_day_unix: [0,0],//订单导出时限制时间的绑定
       }
     },
     methods: {
+      //导出弹窗 修改限制时间
+      Export_pickerchange(){
+        console.log(this.Export_limit_day);
+        if (this.Export_limit_day.length !== 0) {
+          this.Export_limit_day_unix[0] = new Date(this.Export_limit_day[0]).getTime()
+          this.Export_limit_day_unix[1] = new Date(this.Export_limit_day[1]).getTime()
+        }
+        console.log(this.Export_limit_day_unix);
+        this.ExportExecle()
+
+      },
+      //导出到表格
+      ExportExecleAction(){
+        this.$confirm('是否确认导出为Excel表格 ?', '提示', {
+         confirmButtonText: '确定',
+         cancelButtonText: '取消',
+         type: 'warning'
+       }).then(() => {
+         this.axios.post('order/EXPORT_TO_EXLECE',{
+           supplier: this.export_from.supplier_id,
+           limit_time_start: this.Export_limit_day_unix[0],
+           limit_time_end: this.Export_limit_day_unix[1],
+         }).then(res => {
+           console.log(res);
+           let info = res.data.data
+           if (res.data.errno == 0) {
+             this.export_abled_button = true
+             this.loading_notify = this.$notify({
+               title: '成功',
+               message: '表格数据重组成功 ！ 正在导出 ！',
+               type: 'success',
+               duration: 0
+             });
+             setTimeout(() => {
+               function formatJson(filterVal, jsonData) {
+           　　　　return jsonData.map(v => filterVal.map(j => v[j]))
+               }
+               require.ensure([], () => { //require的路径因个人项目结构不同可能需要单独调整，请自行修改路径
+     　　　　　　const { export_json_to_excel } = require('../../vendor/Export2Excel');
+     　　　　　　const tHeader = ['创建时间','订单编号','订单状态','运单编号','物流公司','商品名称','供货商','数量','收货人','收货地址','手机号',
+     '买家备注','卖家备注','商品类型','身份信息'];
+     　　　　　　const filterVal = ['add_time', 'order_sn','order_status', 'express_logistic_code', 'express_shipper_name', 'goods_name', 'supplier_name', 'goods_num',
+      'consignee', 'full_region', 'mobile', 'user_message', 'admin_message', 'is_Identity','Identity_Input'];
+     　　　　　　const list = info;
+     　　　　　　const data = formatJson(filterVal, list);
+     　　　　　　export_json_to_excel(tHeader, data, '供货商订单表');
+     　　　　})
+               this.loading_notify.close()
+               this.export_abled_button = false
+               this.export_execle_popup = false
+             },1000)
+           }
+         })
+       }).catch(() => {
+         this.$message({
+           type: 'info',
+           message: '取消导出 ！'
+         });
+       });
+      },
+      //修改筛选条件
+      export_supplier_change(e){
+        console.log(e);
+        this.ExportExecle()
+      },
+      handlePageChange_goods(val) {
+        this.export_page = val;
+        //保存到localStorage
+        localStorage.setItem('page', this.export_page)
+        localStorage.setItem('export_from', JSON.stringify(this.export_from));
+        this.ExportExecle()
+      },
+      //以下为导出execle表格、、、、、、、、、、、、、、、、、、
+      ExportExecle() {
+        this.export_execle_popup = true
+        this.axios.get('order/getallordergoods',{
+          params: {
+            page: this.export_page,
+            supplier: this.export_from.supplier_id,
+            limit_time_start: this.Export_limit_day_unix[0],
+            limit_time_end: this.Export_limit_day_unix[1],
+          }
+        }).then(res => {
+          console.log(res);
+          this.export_order_goods = res.data.data.data
+          // for (var i = 0; i < this.export_order_goods.length; i++) {
+          //   this.export_order_goods[i].add_localtime = this.timestampToTime(this.export_order_goods.order_info[i].add_time)
+          //
+  				// }
+          this.export_page = res.data.data.currentPage
+          this.export_total = res.data.data.count
+        })
+        console.log(this.tableData);
+      },
       //以下为修改价格//////////////////////////////////////\]
       sure_change_price() {
         if (Number(this.changed_price_input) > Number(this.order_info.actual_price)) {
@@ -1330,6 +1614,7 @@ import { Toast } from 'vant'
             consignee: this.filterForm.consignee,
             status:this.ordertype,
             type:this.orderstate,
+            supplier_id: this.filterForm.supplier_id,
             limit_day_start: this.limit_day_unix[0],
             limit_day_end: this.limit_day_unix[1],
             // user: this.filterForm.user
@@ -1366,6 +1651,12 @@ import { Toast } from 'vant'
           this.total = response.data.data.count
         })
       },
+      getsupplierlist(){
+        this.axios.post('supplier/findallsupplierlistnocurrect').then(res => {
+          console.log(res);
+          this.supplierlist = res.data.data
+        })
+      },
       timestampToTime(timestamp) {
           var date = new Date(timestamp * 1);//时间戳为10位需*1000，时间戳为13位的话不需乘1000
           var Y = date.getFullYear() + '/';
@@ -1391,6 +1682,7 @@ import { Toast } from 'vant'
       let code = this.$route.query.state || '';
       this.changeorder_type(code)
       this.getList();
+      this.getsupplierlist()
       this.looprefresh()
 
     }
@@ -1399,12 +1691,25 @@ import { Toast } from 'vant'
 </script>
 
 <style >
+/* 以下为导出表格 */
+.ChagePrice_area_filler {
+  /* border:1px solid black; */
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.export_select_supplier_area {
+  /* border: 1px solid black; */
+}
+.export_area {
+  width: 80vw;
+}
 /* 以下为修改价格 */
 .change_input_area_btnarea {
   height: 50px;
   /* border: 1px solid black; */
   display: flex;
-  justify-content: flex-end;
+  /* justify-content: flex-end; */
   align-items: center;
 
 }
@@ -2101,9 +2406,9 @@ import { Toast } from 'vant'
     display: none;
 } */
 .ChagePrice_area_title {
-  height: 45px;
-  line-height: 45px;
-  font-size: 18px;
+  height: 66px;
+  line-height: 66px;
+  font-size: 20px;
   color: #222;
   font-weight: bold;
   width: 90%;

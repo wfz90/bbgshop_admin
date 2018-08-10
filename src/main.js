@@ -40,13 +40,13 @@ Vue.use(VueQuillEditor)
 Vue.use(VueAxios, Axios);
 // Vue.use(Vant);
 // Vue.use(Element);
+// import api from '@/config/api';
 
 router.beforeEach((to, from, next) => {
 	let token = sessionStorage.getItem('token') || '';
-//     // 配置接口信息
+    // 配置接口信息
 		Axios.defaults.baseURL = 'http://127.0.0.1:8360/admin/'; //本地测试接口
-
-    Axios.defaults.headers.common['X-Nideshop-Token'] = token;
+		    Axios.defaults.headers.common['X-Nideshop-Token'] = token;
 
 		if (!token && to.name !== 'login') {
 			console.log('重定向');

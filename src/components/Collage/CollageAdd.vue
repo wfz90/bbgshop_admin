@@ -212,6 +212,7 @@ export default {
       })
     },
     onSubmitInfo(){
+      console.log(this.CollageGoods);
       if (this.id !== 0) { //更新
         if (this.Collage.CollageMinPrice == '') {
           this.$message.error('请输入拼团价 ！')
@@ -271,6 +272,7 @@ export default {
         }
         this.Collage.create_time = new Date().getTime()
         this.Collage.retail_price = this.CollageGoods.retail_price
+        this.Collage.main_img = this.CollageGoods.list_pic_url
         this.Collage.VirtualLocal = this.Collage.Virtual == true ? 1 : 0
         console.log(this.CollageGoodsList);
         console.log(this.Collage);

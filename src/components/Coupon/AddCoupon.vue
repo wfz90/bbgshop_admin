@@ -572,7 +572,7 @@ export default {
           coupon: updatedinfo
         }).then(res => {
           console.log(res)
-          if (res.data.errno === 0) {
+          if (res.status === 200) {
             this.$message({
               type: 'success',
               message: '更新成功!'
@@ -726,7 +726,7 @@ export default {
             // AbleEndTime:
           }).then((res) => {
             console.log(res);
-            if (res.data.errno === 0) {
+            if (res.status === 200) {
               this.$message({
                 type: 'success',
                 message: '更新成功!'

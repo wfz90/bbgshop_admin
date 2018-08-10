@@ -36,6 +36,13 @@
                 </div>
               </template>
             </el-table-column>
+            <el-table-column label="砍价链接">
+              <template slot-scope="scope">
+                <div class="goodsnamehh">
+                  pages/Resagin_bargain/Resagin_bargain
+                </div>
+              </template>
+            </el-table-column>
             <el-table-column align="center" label="原价" width="80">
               <template slot-scope="scope">
                 {{(tableData[scope.$index].retail_price / 1).toFixed(2)}}
